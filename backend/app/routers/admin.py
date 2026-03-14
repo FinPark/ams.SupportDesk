@@ -449,31 +449,29 @@ async def sync_mcp_servers(
         return {"status": "warning", "message": "THoster nicht erreichbar", "synced": 0}
 
     synced = 0
+    skipped = 0
+    removed = 0
     for tool in tools:
         tool_name = tool.get("name", "")
-        docker_project = tool.get("docker_project", "")
-        if not tool_name or not docker_project:
+        if not tool_name:
             continue
 
-        # MCP-URL aus Docker-Projekt-Konvention ableiten:
-        # http://{docker_project}-mcp-server-1:8080/mcp
-        mcp_url = f"http://{docker_project}-mcp-server-1:8080/mcp"
-
-        # Health-Check: MCP-Server erreichbar?
-        try:
-            async with httpx.AsyncClient(timeout=3) as client:
-                resp = await client.get(mcp_url.rstrip("/mcp"))
-                if resp.status_code >= 500:
-                    continue
-        except Exception:
-            # MCP-Server nicht erreichbar — trotzdem registrieren
-            pass
+        mcp_url = tool.get("mcp_server_address")
 
         # Prüfen ob bereits vorhanden
         result = await db.execute(
             select(MCPServerRegistry).where(MCPServerRegistry.thoster_tool_name == tool_name)
         )
         existing = result.scalar_one_or_none()
+
+        if not mcp_url:
+            # Kein MCP-Server — ggf. alten Eintrag entfernen
+            if existing:
+                await db.delete(existing)
+                removed += 1
+            else:
+                skipped += 1
+            continue
 
         if existing:
             existing.url = mcp_url
@@ -484,7 +482,7 @@ async def sync_mcp_servers(
                 description=tool.get("description"),
                 url=mcp_url,
                 transport_type="streamable_http",
-                is_active=True,
+                is_active=False,
                 thoster_tool_name=tool_name,
             )
             db.add(server)
@@ -492,7 +490,7 @@ async def sync_mcp_servers(
         synced += 1
 
     await db.commit()
-    return {"status": "ok", "synced": synced, "total_tools": len(tools)}
+    return {"status": "ok", "synced": synced, "skipped": skipped, "removed": removed, "total_tools": len(tools)}
 
 
 # ──────────────────────────────────────────────
@@ -520,32 +518,30 @@ async def list_rag_collections(
     if not rag_server:
         return {"collections": [], "message": "Kein RAG-Server konfiguriert"}
 
-    if not rag_server.url:
-        return {"collections": [], "message": "RAG-Server hat keine URL"}
+    # Mehrere URLs probieren: Backend-API und MCP-Server
+    tool_name = rag_server.thoster_tool_name or rag_server.name
+    docker_name = tool_name.replace("-", "").replace(".", "")
+    candidate_urls = [
+        f"http://{docker_name}-backend-1:8000/api/v1/collections",
+        f"http://{tool_name.replace('.', '-')}.{settings.server_domain}/api/v1/collections",
+    ]
+    if rag_server.url:
+        base = rag_server.url.rstrip("/")
+        candidate_urls.append(f"{base}/collections")
 
-    base_url = rag_server.url.rstrip("/")
-    collections_url = f"{base_url}/collections"
+    for url in candidate_urls:
+        try:
+            async with httpx.AsyncClient(timeout=10) as client:
+                resp = await client.get(url)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    colls = data if isinstance(data, list) else data.get("collections", [])
+                    return {"collections": colls, "rag_server": rag_server.name}
+        except Exception as e:
+            logger.debug(f"RAG-Collections nicht erreichbar ({url}): {e}")
+            continue
 
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.get(collections_url)
-            if resp.status_code == 200:
-                data = resp.json()
-                # Unterstütze sowohl Liste als auch Dict-Antwort
-                if isinstance(data, list):
-                    return {"collections": data, "rag_server": rag_server.name}
-                elif isinstance(data, dict) and "collections" in data:
-                    return {"collections": data["collections"], "rag_server": rag_server.name}
-                else:
-                    return {"collections": data, "rag_server": rag_server.name}
-            else:
-                return {
-                    "collections": [],
-                    "message": f"RAG-Server Fehler: HTTP {resp.status_code}",
-                }
-    except Exception as e:
-        logger.warning(f"RAG-Server nicht erreichbar ({collections_url}): {e}")
-        return {"collections": [], "message": f"RAG-Server nicht erreichbar: {e}"}
+    return {"collections": [], "message": "RAG-Server nicht erreichbar"}
 
 
 # ──────────────────────────────────────────────

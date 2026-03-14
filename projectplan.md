@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 14.03.2026
-**Phase:** Phase 1 abgeschlossen
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen
 
 ---
 
@@ -134,6 +134,31 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] .gitignore (Python, Node, .env, IDE, OS)
 - [x] THoster-Registrierungsdatei (`register-ams-supportdesk.json`)
 - [x] Initialer Git-Commit
+
+---
+
+## Phase 1.1 – Bugfixes & UI-Verbesserungen (14.03.2026)
+
+### Backend-Fixes
+
+- [x] MCP-Server Sync: `mcp_server_address` aus THoster API statt Docker-Konvention ableiten
+- [x] MCP-Server Sync: Neue Server werden deaktiviert angelegt (`is_active=False`)
+- [x] MCP-Server Sync: Tools ohne `mcp_server_address` werden uebersprungen oder entfernt, nicht angelegt
+- [x] MCP-Server Sync: Sync-Ergebnis liefert jetzt `synced`, `skipped`, `removed` und `total_tools`
+- [x] RAG-Collections: Backend erkennt RAG-Backend-URL automatisch aus Docker-Konvention (mehrere Kandidaten-URLs werden probiert)
+- [x] RAG-Collections: Robusteres Fehlerhandling, kein Abbruch bei nicht erreichbaren Kandidaten
+
+### Frontend-Fixes & UI-Verbesserungen
+
+- [x] MCPServerManager: Klick auf Server-Card oeffnet direkt den Bearbeiten-Dialog
+- [x] MCPServerManager: Aktiv/Inaktiv-Toggle als separater Button statt Checkbox im Formular
+- [x] MCPServerManager: Loeschen-Aktion mit Muelleimer-Symbol statt Textlink
+- [x] MCPServerManager: Aktive Server werden oben sortiert (alphabetisch innerhalb der Gruppe)
+- [x] MCPServerManager: Verzoegertes Umsortieren nach Toggle (kein sofortiges Springen in der Liste)
+- [x] MCPServerManager: Standard-Transporttyp auf `streamable_http` geaendert
+- [x] MCPServerManager: Neue Server werden standardmaessig deaktiviert angelegt
+- [x] MarkdownRenderer: `children` prop korrekt an ReactMarkdown uebergeben (Bug behoben)
+- [x] Verbesserte Fehlerbehandlung in Admin-Komponenten
 
 ---
 

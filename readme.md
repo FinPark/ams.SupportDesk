@@ -189,10 +189,10 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 ### Admin-Manager-Komponenten
 
 - **TemplateManager** – Antwort-Vorlagen erstellen und verwalten
-- **PhasenTexteManager** – Automatische Texte je Ticket-Status
-- **ModelleManager** – KI-Modelle konfigurieren
-- **MCPServerManager** – MCP-Server registrieren und synchronisieren
-- **RAGCollectionManager** – RAG-Collections verwalten
+- **PhasenTexteManager** – Automatische Texte je Ticket-Status (eingeklappt/aufklappbar, hellblaue Eingabefelder)
+- **ModelleManager** – KI-Modelle konfigurieren und als Standard setzen
+- **MCPServerManager** – MCP-Server registrieren und synchronisieren; Klick auf Card oeffnet Bearbeitungsformular, aktive Server werden oben sortiert, Toggle-Button fuer Aktiv/Inaktiv, verzoegertes Umsortieren nach Toggle
+- **RAGCollectionManager** – RAG-Collections verwalten; Backend erkennt RAG-URL automatisch aus Docker-Konvention
 - **SettingsManager** – Allgemeine App-Einstellungen
 
 ### Custom Hooks
@@ -291,6 +291,23 @@ ams.SupportDesk/
 ## THoster-Integration
 
 Das Projekt registriert sich ueber `register-ams-supportdesk.json` am THoster-System. Die Konfiguration fuer Claude Code / Agent Hub ist unter `http://192.168.0.52.sslip.io/admin/claude` abrufbar.
+
+### MCP-Server Sync
+
+Der Admin-Bereich synchronisiert MCP-Server automatisch aus der THoster-Tool-Liste. Dabei gilt:
+
+- Die URL des MCP-Servers wird direkt aus dem Feld `mcp_server_address` der THoster API bezogen
+- Tools ohne `mcp_server_address` werden uebersprungen oder bestehende Eintraege entfernt
+- Neu synchronisierte Server werden standardmaessig **deaktiviert** angelegt (manuelle Aktivierung erforderlich)
+- Das Sync-Ergebnis liefert Zaehler fuer `synced`, `skipped`, `removed` und `total_tools`
+
+### RAG-Collections
+
+Der Backend-Router probiert beim Abruf von RAG-Collections mehrere Kandidaten-URLs in dieser Reihenfolge:
+
+1. `http://{docker_name}-backend-1:8000/api/v1/collections` (Docker-interne Konvention)
+2. `http://{tool-name}.{SERVER_DOMAIN}/api/v1/collections` (Traefik-Hostname)
+3. Konfigurierte URL aus `rag_server.url` (falls vorhanden)
 
 ---
 

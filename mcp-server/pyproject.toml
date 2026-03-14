@@ -1,0 +1,16 @@
+[project]
+name = "ams-supportdesk-mcp"
+version = "1.0.0"
+description = "ams.SupportDesk MCP-Server – Tools für Agent Hub / Claude Code"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "fastmcp>=2.0,<3.0",
+    "httpx>=0.28,<1.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

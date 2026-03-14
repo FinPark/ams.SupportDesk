@@ -1,0 +1,95 @@
+services:
+  frontend:
+    build: ./frontend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.amssd-fe.rule=Host(`ams-supportdesk.${SERVER_DOMAIN:-localhost}`)"
+      - "traefik.http.routers.amssd-fe.entrypoints=web"
+      - "traefik.http.routers.amssd-fe.priority=1"
+      - "traefik.http.services.amssd-fe.loadbalancer.server.port=80"
+    networks:
+      - default
+      - thoster-net
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.amssd-api.rule=Host(`ams-supportdesk.${SERVER_DOMAIN:-localhost}`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.amssd-api.entrypoints=web"
+      - "traefik.http.routers.amssd-api.priority=20"
+      - "traefik.http.routers.amssd-api.service=amssd-api"
+      - "traefik.http.services.amssd-api.loadbalancer.server.port=8000"
+    environment:
+      SERVER_DOMAIN: ${SERVER_DOMAIN:-localhost}
+    env_file: .env
+    networks:
+      - default
+      - thoster-net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mcp-server:
+    build: ./mcp-server
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.amssd-mcp.rule=Host(`ams-supportdesk.${SERVER_DOMAIN:-localhost}`) && PathPrefix(`/mcp`)"
+      - "traefik.http.routers.amssd-mcp.entrypoints=web"
+      - "traefik.http.routers.amssd-mcp.priority=40"
+      - "traefik.http.middlewares.amssd-mcp-headers.headers.customresponseheaders.Connection=keep-alive"
+      - "traefik.http.routers.amssd-mcp.middlewares=amssd-mcp-headers"
+      - "traefik.http.services.amssd-mcp.loadbalancer.server.port=8080"
+    environment:
+      SERVER_DOMAIN: ${SERVER_DOMAIN:-localhost}
+      BACKEND_URL: http://backend:8000
+    env_file: .env
+    networks:
+      - default
+      - thoster-net
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME:-supportdesk}
+      POSTGRES_USER: ${DB_USER:-supportdesk}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--locale=C.UTF-8"
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-supportdesk} -d ${DB_NAME:-supportdesk}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  thoster-net:
+    external: true
+    name: thoster-net

@@ -1,0 +1,13 @@
+{
+  "name": "ams-supportdesk",
+  "description": "KI-gestütztes Support-Tool – Chat statt Telefon & E-Mail",
+  "developer": "André Finken",
+  "developer_email": "a.Finken@ams-erp.com",
+  "openapi_path": "/api/openapi.json",
+  "docker_project": "amssupportdesk",
+  "health_check_url": "http://amssupportdesk-frontend-1:80",
+  "email_if_down": true,
+  "all_users": true,
+  "tech_stack": "React/Chakra UI + FastAPI + PostgreSQL + Redis + FastMCP",
+  "version": "1.0.0"
+}

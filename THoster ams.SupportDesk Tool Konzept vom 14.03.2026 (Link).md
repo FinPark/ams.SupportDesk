@@ -1,0 +1,1 @@
+/Users/aFinken/Library/Mobile Documents/iCloud~md~obsidian/Documents/vault_arbeit/📥 Inbox/THoster ams.SupportDesk Tool Konzept vom 14.03.2026.md

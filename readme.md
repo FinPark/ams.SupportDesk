@@ -113,8 +113,10 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | DB_USER       | Datenbankbenutzer                     | `supportdesk`                   |
 | DB_PASSWORD   | Datenbankpasswort (sicheres Passwort) | `CHANGE_ME_secure_password`     |
 | REDIS_URL     | Redis-Verbindungs-URL                 | `redis://redis:6379/0`          |
-| SECRET_KEY    | JWT/Session-Secret (langer Zufallsstring) | `CHANGE_ME_random_long_string` |
-| SERVER_DOMAIN | THoster-Domain fuer Traefik           | `192.168.x.x.sslip.io`         |
+| SECRET_KEY        | JWT/Session-Secret (langer Zufallsstring)      | `CHANGE_ME_random_long_string`   |
+| SERVER_DOMAIN     | THoster-Domain fuer Traefik                    | `192.168.x.x.sslip.io`          |
+| OPENAI_API_KEY    | API-Key fuer OpenAI (optional)                 | `sk-...`                         |
+| ANTHROPIC_API_KEY | API-Key fuer Anthropic Claude (optional)       | `sk-ant-...`                     |
 
 ---
 
@@ -134,7 +136,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 
 ## Backend
 
-**Technologien:** FastAPI 0.115 | SQLAlchemy 2.0 async | asyncpg | Pydantic 2 | Redis 5 | WebSockets
+**Technologien:** FastAPI 0.115 | SQLAlchemy 2.0 async | asyncpg | Pydantic 2 | Redis 5 | WebSockets | httpx (LLM-Aufrufe)
 
 ### Datenmodelle (13)
 
@@ -154,21 +156,22 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | MCPServerRegistry    | Registrierte MCP-Server                   |
 | AppSetting           | Anwendungseinstellungen (Key-Value)       |
 
-### API-Router (11)
+### API-Router (12)
 
-| Router          | Prefix              | Beschreibung                             |
-|-----------------|---------------------|------------------------------------------|
-| auth            | `/api/auth`         | Supporter-Authentifizierung              |
-| kunden          | `/api/kunden`       | Kundenverwaltung                         |
-| kunden_portal   | `/api/portal`       | Kunden-Portal-Endpunkte                  |
-| tickets         | `/api/tickets`      | Ticket-CRUD und Statusaenderungen        |
-| tags            | `/api/tags`         | Tag-Verwaltung                           |
-| chat_sessions   | `/api/chat-sessions`| Chat-Session-Verwaltung                  |
-| nachrichten     | `/api/nachrichten`  | Nachrichten-CRUD                         |
-| eingangskorb    | `/api/eingangskorb` | Eingangskorb-Abfrage                     |
-| connections     | `/api/connections`  | ams-connections Integration              |
-| ws              | `/api/ws`           | WebSocket (Ticket-Chat + Eingangskorb)   |
-| admin           | `/api/admin`        | Admin-Verwaltung                         |
+| Router          | Prefix                   | Beschreibung                             |
+|-----------------|--------------------------|------------------------------------------|
+| auth            | `/api/auth`              | Supporter-Authentifizierung              |
+| kunden          | `/api/kunden`            | Kundenverwaltung                         |
+| kunden_portal   | `/api/portal`            | Kunden-Portal-Endpunkte                  |
+| tickets         | `/api/tickets`           | Ticket-CRUD und Statusaenderungen        |
+| tags            | `/api/tags`              | Tag-Verwaltung                           |
+| chat_sessions   | `/api/chat-sessions`     | Chat-Session-Verwaltung                  |
+| nachrichten     | `/api/nachrichten`       | Nachrichten-CRUD inkl. Delete            |
+| eingangskorb    | `/api/eingangskorb`      | Eingangskorb-Abfrage                     |
+| connections     | `/api/connections`       | ams-connections Integration              |
+| ki_recherche    | `/api/v1/ki-recherche`   | KI-Recherche-Chat (Verlauf, Nachrichten, LLM) |
+| ws              | `/api/ws`                | WebSocket (Ticket-Chat + Eingangskorb)   |
+| admin           | `/api/admin`             | Admin-Verwaltung inkl. Systemprompt      |
 
 ---
 
@@ -193,7 +196,12 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 - **ModelleManager** – KI-Modelle konfigurieren und als Standard setzen
 - **MCPServerManager** – MCP-Server registrieren und synchronisieren; Klick auf Card oeffnet Bearbeitungsformular, aktive Server werden oben sortiert, Toggle-Button fuer Aktiv/Inaktiv, verzoegertes Umsortieren nach Toggle
 - **RAGCollectionManager** – RAG-Collections verwalten; Toggle zum Aktivieren/Deaktivieren pro Collection (analog zu MCP-Server), aktive Collections werden oben sortiert, Aktivierungszustand wird in App-Settings persistiert (`rag_active_collections`)
-- **SettingsManager** – Allgemeine App-Einstellungen
+- **KISettingsManager** (Phase 2) – KI-spezifische Einstellungen: konfigurierbarer Systemprompt fuer den Recherche-Assistenten
+- **SettingsManager** – Allgemeine App-Einstellungen (ohne KI-Prompt, separater Tab)
+
+### Shared-Komponenten
+
+- **TemplatePicker** (Phase 2) – Wiederverwendbarer Template-Picker mit `/`-Trigger-Suche; wird in KundenChat und KIChat eingesetzt
 
 ### Custom Hooks
 
@@ -221,6 +229,35 @@ Der MCP-Server stellt 6 Tools fuer Claude Code und den Agent Hub bereit:
 | `tags_auflisten`     | Alle verfuegbaren Tags auflisten                |
 
 **Endpunkt:** `http://ams-supportdesk.{SERVER_DOMAIN}/mcp` (Streamable HTTP)
+
+---
+
+## KI-Recherche (Phase 2)
+
+Der Supporter-Arbeitsplatz verfuegt ueber einen vollstaendigen KI-Recherche-Chat:
+
+- **LLM-Router** (`services/llm_router.py`) – Abstraktion fuer OpenAI-kompatible Provider (OpenAI, Ollama, vLLM, Groq, Mistral) und Anthropic Claude; automatische Erkennung per `provider_type`
+- **KI-Recherche-API** (`/api/v1/ki-recherche`) – Verwaltet Recherche-Verlaeufe pro Ticket, speichert Konversationen, ruft LLM auf, integriert RAG-Kontext
+- **RAG-Integration** – Collections koennen pro Anfrage gezielt ausgewaehlt werden; Fallback auf `rag_active_collections` aus Settings
+- **Konfigurierbarer Systemprompt** – Prompt fuer den Recherche-Assistenten wird in `AppSetting` (Key: `ki_system_prompt`) gespeichert und ist im Admin-Bereich editierbar
+- **WebSocket-Broadcast** – KI-Antworten werden per WebSocket an alle verbundenen Clients gesendet (`type: ki_nachricht`)
+
+### KI-Recherche-API-Endpunkte
+
+| Methode  | Pfad                                              | Beschreibung                             |
+|----------|---------------------------------------------------|------------------------------------------|
+| GET      | `/api/v1/ki-recherche/{ticket_id}`               | Aktiven Verlauf laden                    |
+| POST     | `/api/v1/ki-recherche/{ticket_id}`               | Neuen Verlauf starten                    |
+| GET      | `/api/v1/ki-recherche/{verlauf_id}/nachrichten`  | Nachrichten eines Verlaufs laden         |
+| POST     | `/api/v1/ki-recherche/{verlauf_id}/nachrichten`  | Nachricht senden + KI-Antwort erhalten   |
+| PATCH    | `/api/v1/ki-recherche/{verlauf_id}/nachrichten/{id}/uebernehmen` | Als uebernommen markieren |
+| DELETE   | `/api/v1/ki-recherche/{verlauf_id}/nachrichten/{id}` | KI-Nachricht loeschen              |
+
+---
+
+## Ticketnummern
+
+Tickets erhalten beim Anlegen eine fortlaufende, lesbare `nummer` (auto-increment, nicht die UUID). Diese wird im Kunden-Portal zum Einloggen verwendet und in allen Listen/Komponenten angezeigt.
 
 ---
 
@@ -264,9 +301,9 @@ ams.SupportDesk/
 │       ├── database.py      # Async SQLAlchemy Engine
 │       ├── middleware/      # Auth-Middleware
 │       ├── models/          # 13 SQLAlchemy-Modelle
-│       ├── routers/         # 11 API-Router
+│       ├── routers/         # 12 API-Router (inkl. ki_recherche)
 │       ├── schemas/         # Pydantic-Schemas
-│       └── services/        # ConnectionManager, Connections-Client
+│       └── services/        # ConnectionManager, ConnectionsClient, LLMRouter
 │
 ├── frontend/
 │   ├── Dockerfile

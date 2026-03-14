@@ -37,6 +37,7 @@ VALID_TRANSITIONS = {
 def _ticket_response(ticket: Ticket) -> TicketResponse:
     return TicketResponse(
         id=str(ticket.id),
+        nummer=ticket.nummer,
         kunde_id=str(ticket.kunde_id),
         supporter_id=str(ticket.supporter_id) if ticket.supporter_id else None,
         titel=ticket.titel,

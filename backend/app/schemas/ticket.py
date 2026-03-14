@@ -27,6 +27,7 @@ class TicketTagResponse(BaseModel):
 
 class TicketResponse(BaseModel):
     id: str
+    nummer: int
     kunde_id: str
     supporter_id: Optional[str]
     titel: str

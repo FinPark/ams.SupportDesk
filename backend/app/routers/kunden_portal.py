@@ -42,25 +42,45 @@ async def identify_kunde(body: KundeIdentify, db: AsyncSession = Depends(get_db)
 
     response = {"kunde_id": str(kunde.id), "name": kunde.name, "ticket": None}
 
-    # Wenn Ticket-Nr angegeben, Ticket laden
+    # Wenn Ticket-Nr angegeben, Ticket laden (Nummer oder UUID)
     if body.ticket_nr:
+        ticket = None
+        nr = body.ticket_nr.strip()
+
+        # Erst als Nummer versuchen
         try:
-            ticket_uuid = uuid.UUID(body.ticket_nr)
+            ticket_nummer = int(nr)
             stmt = (
                 select(Ticket)
                 .options(selectinload(Ticket.tags))
-                .where(Ticket.id == ticket_uuid, Ticket.kunde_id == kunde.id)
+                .where(Ticket.nummer == ticket_nummer, Ticket.kunde_id == kunde.id)
             )
             t_result = await db.execute(stmt)
             ticket = t_result.scalar_one_or_none()
-            if ticket:
-                response["ticket"] = {
-                    "id": str(ticket.id),
-                    "titel": ticket.titel,
-                    "status": ticket.status,
-                }
         except ValueError:
             pass
+
+        # Fallback: als UUID versuchen
+        if not ticket:
+            try:
+                ticket_uuid = uuid.UUID(nr)
+                stmt = (
+                    select(Ticket)
+                    .options(selectinload(Ticket.tags))
+                    .where(Ticket.id == ticket_uuid, Ticket.kunde_id == kunde.id)
+                )
+                t_result = await db.execute(stmt)
+                ticket = t_result.scalar_one_or_none()
+            except ValueError:
+                pass
+
+        if ticket:
+            response["ticket"] = {
+                "id": str(ticket.id),
+                "nummer": ticket.nummer,
+                "titel": ticket.titel,
+                "status": ticket.status,
+            }
 
     return response
 
@@ -110,6 +130,7 @@ async def create_portal_ticket(
     await manager.broadcast_eingangskorb({
         "type": "neues_ticket",
         "ticket_id": str(ticket.id),
+        "nummer": ticket.nummer,
         "kunde_name": kunde.name,
         "titel": ticket.titel,
         "vorschau": nachricht_text[:100],
@@ -117,6 +138,7 @@ async def create_portal_ticket(
 
     return {
         "ticket_id": str(ticket.id),
+        "ticket_nummer": ticket.nummer,
         "session_id": str(session.id),
         "nachricht_id": str(nachricht.id),
     }

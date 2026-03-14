@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Float, ForeignKey, String, Text
+from sqlalchemy import Float, ForeignKey, Identity, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -12,6 +12,9 @@ class Ticket(Base):
     __tablename__ = "tickets"
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    nummer: Mapped[int] = mapped_column(
+        Integer, Identity(start=1001, increment=1), unique=True, index=True
+    )
     kunde_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("kunden.id"), index=True)
     supporter_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         ForeignKey("supporters.id"), nullable=True, index=True

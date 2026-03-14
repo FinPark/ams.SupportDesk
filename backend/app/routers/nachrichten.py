@@ -97,3 +97,36 @@ async def markieren(
         kanal=nachricht.kanal, audio_ref=nachricht.audio_ref,
         markiert=nachricht.markiert, created_at=nachricht.created_at,
     )
+
+
+@router.delete("/{nachricht_id}")
+async def delete_nachricht(
+    nachricht_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: Supporter = Depends(get_current_supporter),
+):
+    """Supporter-Nachricht löschen (nur eigene Nachrichten)."""
+    result = await db.execute(select(Nachricht).where(Nachricht.id == uuid.UUID(nachricht_id)))
+    nachricht = result.scalar_one_or_none()
+    if not nachricht:
+        raise HTTPException(status_code=404, detail="Nachricht nicht gefunden")
+
+    if nachricht.rolle != "supporter":
+        raise HTTPException(status_code=403, detail="Nur Supporter-Nachrichten können gelöscht werden")
+
+    await db.delete(nachricht)
+    await db.commit()
+
+    # WebSocket-Broadcast
+    from app.models.chat_session import ChatSession
+    sess_result = await db.execute(
+        select(ChatSession).where(ChatSession.id == nachricht.session_id)
+    )
+    session = sess_result.scalar_one_or_none()
+    if session:
+        await manager.broadcast(f"ticket:{session.ticket_id}", {
+            "type": "nachricht_geloescht",
+            "nachricht_id": nachricht_id,
+        })
+
+    return {"status": "ok"}

@@ -79,6 +79,7 @@ export default function TicketList({ supporter, onTicketSelect, selectedTicketId
                   lineClamp={1}
                   flex={1}
                 >
+                  <Text as="span" color="blue.500" fontWeight="bold">#{ticket.nummer}</Text>{" "}
                   {ticket.titel}
                 </Text>
                 <HStack gap={2} flexShrink={0}>

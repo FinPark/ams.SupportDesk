@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 14.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen
 
 ---
 
@@ -17,7 +17,9 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Meilenstein       | Zieldatum  | Status        |
 |-------------------|------------|---------------|
 | Phase 1: Grundsystem | 14.03.2026 | Abgeschlossen |
-| Phase 2: Erweiterte KI-Integration | offen | Geplant |
+| Phase 1.1: Bugfixes & UI-Verbesserungen | 14.03.2026 | Abgeschlossen |
+| Phase 1.2: RAG-Collections Toggle | 14.03.2026 | Abgeschlossen |
+| Phase 2: KI-Integration (LLM-Router, Recherche-Chat, Ticketnummern) | 14.03.2026 | Abgeschlossen |
 | Phase 3: Reporting & Analytics | offen | Geplant |
 
 ---
@@ -47,22 +49,24 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] MCPServerRegistry (Registrierte MCP-Server)
 - [x] AppSetting (Key-Value App-Einstellungen)
 
-**API-Router (11 Stueck):**
+**API-Router (12 Stueck):**
 - [x] auth (`/api/auth`) – Login, Logout, Session-Check
 - [x] kunden (`/api/kunden`) – CRUD Kundenverwaltung
-- [x] kunden_portal (`/api/portal`) – Kunden-seitige Endpunkte
-- [x] tickets (`/api/tickets`) – Ticket-CRUD + Statusaenderungen
+- [x] kunden_portal (`/api/portal`) – Kunden-seitige Endpunkte (Ticket per Nummer)
+- [x] tickets (`/api/tickets`) – Ticket-CRUD + Statusaenderungen + Nummer in Response
 - [x] tags (`/api/tags`) – Tag-Verwaltung
 - [x] chat_sessions (`/api/chat-sessions`) – Session-Verwaltung
-- [x] nachrichten (`/api/nachrichten`) – Nachrichtenversand und -abruf
-- [x] eingangskorb (`/api/eingangskorb`) – Neue/unzugewiesene Tickets
+- [x] nachrichten (`/api/nachrichten`) – Nachrichtenversand, -abruf und Delete (Supporter)
+- [x] eingangskorb (`/api/eingangskorb`) – Neue/unzugewiesene Tickets mit Nummer
 - [x] connections (`/api/connections`) – ams-connections/Agent Hub
+- [x] ki_recherche (`/api/v1/ki-recherche`) – KI-Recherche-Chat, LLM-Aufrufe, RAG (Phase 2)
 - [x] ws (`/api/ws`) – WebSocket fuer Echtzeit-Updates
-- [x] admin (`/api/admin`) – Templates, Phasen, MCP-Sync, RAG, Modelle
+- [x] admin (`/api/admin`) – Templates, Phasen, MCP-Sync, RAG, Modelle, KI-Systemprompt
 
 **Services:**
 - [x] ConnectionManager (WebSocket-Verbindungsverwaltung)
 - [x] ConnectionsClient (HTTP-Client fuer ams-connections API)
+- [x] LLMRouter (Phase 2 – Provider-Abstraktion fuer LLM-Aufrufe)
 
 **Ticket-Statusmaschine:**
 - [x] eingang → in_bearbeitung
@@ -174,12 +178,69 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 
 ---
 
-## Phase 2 – Geplant
+## Phase 2 – Abgeschlossen (14.03.2026)
+
+### Backend – KI-Integration
+
+- [x] `services/llm_router.py` – LLM-Provider-Abstraktion
+  - [x] `LLMProvider` ABC-Basisklasse
+  - [x] `OpenAICompatibleProvider` fuer OpenAI, Ollama, vLLM, Groq, Mistral
+  - [x] `AnthropicProvider` fuer Anthropic Claude (eigenes API-Format)
+  - [x] `LLMRouter.create_provider()` Factory-Methode
+- [x] `routers/ki_recherche.py` – KI-Recherche-API (`/api/v1/ki-recherche`)
+  - [x] GET/POST Verlauf pro Ticket
+  - [x] GET/POST/DELETE Nachrichten pro Verlauf
+  - [x] PATCH Nachricht als uebernommen markieren
+  - [x] LLM-Aufruf mit Ticket-Kontext als System-Prompt
+  - [x] RAG-Kontext-Integration (per Anfrage oder aus Settings)
+  - [x] WebSocket-Broadcast von KI-Antworten
+  - [x] Konfigurierbarer System-Prompt (aus AppSetting `ki_system_prompt`)
+- [x] `config.py` – `OPENAI_API_KEY` und `ANTHROPIC_API_KEY` Settings
+- [x] `main.py` – KI-Recherche-Router registriert
+- [x] `models/ticket.py` – Ticketnummer (auto-increment, Integer)
+- [x] `schemas/ticket.py` – `nummer` in Response-Schemas
+- [x] `routers/tickets.py` – `nummer` in API-Responses
+- [x] `routers/eingangskorb.py` – `nummer` in Eingangskorb-Items
+- [x] `routers/kunden_portal.py` – Ticket-Identifizierung per Nummer statt UUID; `nummer` in Responses
+- [x] `routers/nachrichten.py` – DELETE-Endpoint fuer Supporter-Nachrichten
+- [x] `routers/admin.py` – Default-Systemprompt-Endpoint (`/admin/ki/default-system-prompt`)
+
+### Frontend – KI-Integration & UI
+
+- [x] `lib/types.ts` – `nummer` in `Ticket` und `EingangskorbItem`
+- [x] `App.tsx` – `ticketNummer` wird in Routing durchgereicht
+- [x] `components/workspace/TicketWorkspace.tsx`
+  - [x] Echte KI-API-Aufrufe statt Mock
+  - [x] RAG-Collection-Auswahl pro Anfrage
+  - [x] Aktiver Panel-Indikator (linker/rechter Bereich)
+  - [x] Delete-Handler fuer Nachrichten
+- [x] `components/workspace/KIChat.tsx`
+  - [x] Loading-State waehrend LLM-Aufruf
+  - [x] RAG-Badges fuer aktive Collections
+  - [x] Kontext-Block mit Ticket-Informationen
+  - [x] Loeschen-Buttons fuer KI-Nachrichten
+  - [x] Fokus-Indikator fuer Panel-Zustand
+  - [x] Template-Picker-Integration (/-Trigger)
+- [x] `components/workspace/KundenChat.tsx`
+  - [x] Loeschen-Button fuer Supporter-Nachrichten
+  - [x] Fokus-Indikator fuer Panel-Zustand
+  - [x] Template-Picker-Integration (/-Trigger)
+- [x] `components/portal/PortalLogin.tsx` – Login per Ticketnummer statt UUID
+- [x] `components/portal/PortalChat.tsx` – Ticketnummer anzeigen
+- [x] `components/eingangskorb/EingangskorbItem.tsx` – Ticketnummer anzeigen
+- [x] `components/tickets/TicketList.tsx` – Ticketnummer anzeigen
+- [x] `components/admin/AdminPage.tsx` – KI-Einstellungen und Einstellungen als separate Tabs
+- [x] `components/admin/SettingsManager.tsx` – Nur allgemeine Settings (ohne KI-Prompt)
+- [x] `components/admin/KISettingsManager.tsx` – KI-Einstellungen: konfigurierbarer Systemprompt
+- [x] `components/shared/TemplatePicker.tsx` – Wiederverwendbarer Template-Picker mit /-Suche und Keyboard-Navigation
+
+---
+
+## Phase 2.1 – Offen (naechste Schritte)
 
 ### KI-Integration vertiefen
 
-- [ ] Vollstaendige ams-connections Streaming-Integration
-- [ ] RAG-Recherche direkt im KI-Chat-Bereich
+- [ ] Streaming-Unterstuetzung fuer LLM-Antworten (Server-Sent Events)
 - [ ] KI-gestuetzte Ticket-Kategorisierung beim Eingang
 - [ ] Automatische Template-Vorschlaege basierend auf Ticket-Inhalt
 - [ ] Sentiment-Analyse fuer Kundennachrichten

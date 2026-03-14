@@ -582,3 +582,12 @@ async def update_setting(
     await db.commit()
     await db.refresh(setting)
     return {"key": setting.key, "value": setting.value}
+
+
+@router.get("/ki-system-prompt/default")
+async def get_default_system_prompt(
+    _: Supporter = Depends(get_current_supporter),
+):
+    """Standard-System-Prompt für KI-Recherche zurückgeben."""
+    from app.routers.ki_recherche import DEFAULT_SYSTEM_PROMPT
+    return {"prompt": DEFAULT_SYSTEM_PROMPT}

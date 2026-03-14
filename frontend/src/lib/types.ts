@@ -24,6 +24,7 @@ export interface TicketTag {
 
 export interface Ticket {
   id: string
+  nummer: number
   kunde_id: string
   supporter_id: string | null
   titel: string
@@ -64,6 +65,7 @@ export interface Nachricht {
 
 export interface EingangskorbItem {
   ticket_id: string
+  nummer: number
   kunde_name: string
   titel: string
   prioritaet: string

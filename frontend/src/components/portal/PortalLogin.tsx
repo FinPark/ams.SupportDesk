@@ -3,7 +3,7 @@ import { Box, Button, Heading, Input, Text, VStack } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface Props {
-  onIdentified: (kundeId: string, name: string, ticketId?: string) => void
+  onIdentified: (kundeId: string, name: string, ticketId?: string, ticketNummer?: number) => void
 }
 
 export default function PortalLogin({ onIdentified }: Props) {
@@ -25,7 +25,8 @@ export default function PortalLogin({ onIdentified }: Props) {
       onIdentified(
         data.kunde_id,
         data.name,
-        data.ticket?.id || undefined
+        data.ticket?.id || undefined,
+        data.ticket?.nummer || undefined
       )
     } catch {
       setError("Identifikation fehlgeschlagen")

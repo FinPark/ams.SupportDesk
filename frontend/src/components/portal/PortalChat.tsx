@@ -9,11 +9,13 @@ interface Props {
   kundeId: string
   kundeName: string
   ticketId?: string
+  ticketNummer?: number
   onBack: () => void
 }
 
-export default function PortalChat({ kundeId, kundeName, ticketId: initialTicketId, onBack }: Props) {
+export default function PortalChat({ kundeId, kundeName, ticketId: initialTicketId, ticketNummer: initialNummer, onBack }: Props) {
   const [ticketId, setTicketId] = useState(initialTicketId || "")
+  const [ticketNummer, setTicketNummer] = useState<number | null>(initialNummer || null)
   const [nachrichten, setNachrichten] = useState<Nachricht[]>([])
   const [input, setInput] = useState("")
   const [sending, setSending] = useState(false)
@@ -72,6 +74,7 @@ export default function PortalChat({ kundeId, kundeName, ticketId: initialTicket
           titel: input.trim().slice(0, 80),
         })
         setTicketId(data.ticket_id)
+        setTicketNummer(data.ticket_nummer)
         setNeedsTicket(false)
         // Nachrichten laden
         const msgResp = await api.get(`/portal/tickets/${data.ticket_id}/nachrichten`, {
@@ -105,7 +108,7 @@ export default function PortalChat({ kundeId, kundeName, ticketId: initialTicket
           <VStack align="start" gap={0}>
             <Heading size="md">ams.SupportDesk</Heading>
             <Text fontSize="sm" opacity={0.8}>
-              {kundeName} {ticketId ? `· Ticket ${ticketId.slice(0, 8)}...` : "· Neue Anfrage"}
+              {kundeName} {ticketNummer ? `· Ticket #${ticketNummer}` : ticketId ? `· Ticket` : "· Neue Anfrage"}
             </Text>
           </VStack>
           <Button variant="ghost" color="white" size="sm" onClick={onBack}>

@@ -129,6 +129,7 @@ from app.routers.eingangskorb import router as eingangskorb_router
 from app.routers.connections import router as connections_router
 from app.routers.ws import router as ws_router
 from app.routers.admin import router as admin_router
+from app.routers.ki_recherche import router as ki_recherche_router
 
 app.include_router(auth_router)
 app.include_router(kunden_router)
@@ -141,3 +142,4 @@ app.include_router(eingangskorb_router)
 app.include_router(connections_router)
 app.include_router(ws_router)
 app.include_router(admin_router)
+app.include_router(ki_recherche_router)

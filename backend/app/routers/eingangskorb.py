@@ -54,6 +54,7 @@ async def get_eingangskorb(
 
         items.append({
             "ticket_id": str(ticket.id),
+            "nummer": ticket.nummer,
             "kunde_name": ticket.kunde.name if ticket.kunde else "Unbekannt",
             "titel": ticket.titel,
             "prioritaet": ticket.prioritaet,

@@ -7,6 +7,9 @@ interface Setting {
   value: string
 }
 
+// Keys die in eigenen Tabs verwaltet werden
+const HIDDEN_KEYS = new Set(["ki_system_prompt"])
+
 export default function SettingsManager() {
   const [settings, setSettings] = useState<Setting[]>([])
   const [loading, setLoading] = useState(true)
@@ -75,6 +78,8 @@ export default function SettingsManager() {
     return original ? editState[key] !== original.value : false
   }
 
+  const visibleSettings = settings.filter((s) => !HIDDEN_KEYS.has(s.key))
+
   if (loading) {
     return <Text color="gray.400">Einstellungen werden geladen...</Text>
   }
@@ -130,7 +135,7 @@ export default function SettingsManager() {
         </Box>
       )}
 
-      {settings.length === 0 ? (
+      {visibleSettings.length === 0 ? (
         <Box textAlign="center" py={8}>
           <Text color="gray.400" mb={2}>Keine Einstellungen vorhanden.</Text>
           <Text fontSize="sm" color="gray.400">
@@ -139,7 +144,7 @@ export default function SettingsManager() {
         </Box>
       ) : (
         <VStack gap={2} align="stretch">
-          {settings.map((s) => (
+          {visibleSettings.map((s) => (
             <Box
               key={s.key}
               bg="white"

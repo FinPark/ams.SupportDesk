@@ -15,14 +15,16 @@ function PortalPage() {
   const [kundeId, setKundeId] = useState("")
   const [kundeName, setKundeName] = useState("")
   const [ticketId, setTicketId] = useState<string | undefined>()
+  const [ticketNummer, setTicketNummer] = useState<number | undefined>()
 
   if (!kundeId) {
     return (
       <PortalLogin
-        onIdentified={(id, name, tid) => {
+        onIdentified={(id, name, tid, tnr) => {
           setKundeId(id)
           setKundeName(name)
           setTicketId(tid)
+          setTicketNummer(tnr)
         }}
       />
     )
@@ -33,10 +35,12 @@ function PortalPage() {
       kundeId={kundeId}
       kundeName={kundeName}
       ticketId={ticketId}
+      ticketNummer={ticketNummer}
       onBack={() => {
         setKundeId("")
         setKundeName("")
         setTicketId(undefined)
+        setTicketNummer(undefined)
       }}
     />
   )

@@ -20,6 +20,7 @@ export default function EingangskorbItemCard({ item, onUebernehmen }: Props) {
       <VStack align="stretch" gap={2}>
         <HStack justify="space-between">
           <Text fontWeight="bold" fontSize="sm" color="gray.700">
+            <Text as="span" color="blue.500">#{item.nummer}</Text>{" "}
             {item.kunde_name}
           </Text>
           <Text fontSize="xs" color="gray.400">

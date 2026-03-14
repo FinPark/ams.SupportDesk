@@ -1,17 +1,24 @@
 import { useState, useRef, useEffect } from "react"
-import { Box, Button, HStack, IconButton, Input, Text } from "@chakra-ui/react"
+import { Box, Button, HStack, Input, Text } from "@chakra-ui/react"
 import MarkdownRenderer from "@/components/shared/MarkdownRenderer"
+import TemplatePicker, { useTemplatePicker } from "@/components/shared/TemplatePicker"
 import { Nachricht } from "@/lib/types"
 
 interface Props {
   nachrichten: Nachricht[]
   onSend: (text: string) => Promise<void>
   onSendToKI: (markierte: Nachricht[]) => void
+  onDeleteNachricht: (nachricht: Nachricht) => void
   disabled?: boolean
+  isActive?: boolean
+  onFocus?: () => void
 }
 
-export default function KundenChat({ nachrichten, onSend, onSendToKI, disabled }: Props) {
-  const [input, setInput] = useState("")
+export default function KundenChat({ nachrichten, onSend, onSendToKI, onDeleteNachricht, disabled, isActive, onFocus }: Props) {
+  const {
+    input, setInput, pickerVisible, templateFilter, filtered, selectedIndex,
+    handleInputChange, handleTemplateSelect, handlePickerClose, handleKeyDown,
+  } = useTemplatePicker()
   const [sending, setSending] = useState(false)
   const [markierte, setMarkierte] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -52,9 +59,16 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, disabled }
   return (
     <Box display="flex" flexDirection="column" h="100%" borderRightWidth={1} borderColor="gray.200">
       {/* Header */}
-      <Box px={4} py={2} borderBottomWidth={1} borderColor="gray.200" bg="white">
+      <Box
+        px={4}
+        py={2}
+        borderBottomWidth={1}
+        borderColor={isActive ? "blue.400" : "gray.200"}
+        bg={isActive ? "blue.50" : "white"}
+        transition="all 0.2s"
+      >
         <HStack justify="space-between">
-          <Text fontWeight="bold" fontSize="sm" color="gray.700">
+          <Text fontWeight="bold" fontSize="sm" color={isActive ? "blue.600" : "gray.700"}>
             Kundengespräch
           </Text>
           {markierte.size > 0 && (
@@ -120,12 +134,32 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, disabled }
                 borderColor="blue.300"
                 transition="all 0.15s"
               >
-                <Text fontSize="xs" fontWeight="bold" mb={1} opacity={0.6}>
-                  {isSupporter ? "Support" : "Kunde"}
-                  {isMarked && !isSupporter && (
-                    <Text as="span" color="blue.500" ml={2}>● markiert</Text>
+                <HStack justify="space-between" mb={1}>
+                  <Text fontSize="xs" fontWeight="bold" opacity={0.6}>
+                    {isSupporter ? "Support" : "Kunde"}
+                    {isMarked && !isSupporter && (
+                      <Text as="span" color="blue.500" ml={2}>● markiert</Text>
+                    )}
+                  </Text>
+                  {isSupporter && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      colorPalette="red"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (window.confirm("Nachricht wirklich löschen?")) {
+                          onDeleteNachricht(msg)
+                        }
+                      }}
+                      title="Löschen"
+                      px={1}
+                      minW="auto"
+                    >
+                      🗑
+                    </Button>
                   )}
-                </Text>
+                </HStack>
                 <MarkdownRenderer content={msg.inhalt_markdown} />
                 <Text fontSize="xs" mt={1} opacity={0.5} textAlign="right">
                   {new Date(msg.created_at).toLocaleTimeString("de-DE", {
@@ -146,13 +180,22 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, disabled }
 
       {/* Eingabe */}
       {!disabled && (
-        <Box bg="white" borderTopWidth={1} borderColor="gray.200" px={4} py={3}>
+        <Box bg="white" borderTopWidth={1} borderColor="gray.200" px={4} py={3} position="relative">
+          <TemplatePicker
+            visible={pickerVisible}
+            filter={templateFilter}
+            filtered={filtered}
+            selectedIndex={selectedIndex}
+            onSelect={handleTemplateSelect}
+          />
           <form onSubmit={handleSend}>
             <HStack>
               <Input
-                placeholder="Antwort an Kunden..."
+                placeholder="Antwort an Kunden... (/ für Vorlagen)"
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onFocus={onFocus}
                 flex={1}
               />
               <Button

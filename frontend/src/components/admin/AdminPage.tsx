@@ -8,6 +8,8 @@ import PhasenTexteManager from "./PhasenTexteManager"
 import ModelleManager from "./ModelleManager"
 import MCPServerManager from "./MCPServerManager"
 import RAGCollectionManager from "./RAGCollectionManager"
+import KISettingsManager from "./KISettingsManager"
+import SettingsManager from "./SettingsManager"
 
 const TABS = [
   { key: "templates", label: "Vorlagen" },
@@ -15,6 +17,8 @@ const TABS = [
   { key: "modelle", label: "Modelle" },
   { key: "mcp", label: "MCP-Server" },
   { key: "rag", label: "RAG-Collections" },
+  { key: "ki-settings", label: "KI-Einstellungen" },
+  { key: "settings", label: "Einstellungen" },
 ] as const
 
 type TabKey = (typeof TABS)[number]["key"]
@@ -48,6 +52,10 @@ function AdminPageContent() {
         return <MCPServerManager />
       case "rag":
         return <RAGCollectionManager />
+      case "ki-settings":
+        return <KISettingsManager />
+      case "settings":
+        return <SettingsManager />
     }
   }
 

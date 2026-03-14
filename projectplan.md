@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 14.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle
 
 ---
 
@@ -159,6 +159,18 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] MCPServerManager: Neue Server werden standardmaessig deaktiviert angelegt
 - [x] MarkdownRenderer: `children` prop korrekt an ReactMarkdown uebergeben (Bug behoben)
 - [x] Verbesserte Fehlerbehandlung in Admin-Komponenten
+
+---
+
+## Phase 1.2 – RAG-Collections Toggle (14.03.2026)
+
+### Frontend-Erweiterungen
+
+- [x] RAGCollectionManager: Toggle zum Aktivieren/Deaktivieren pro Collection (analog zu MCPServerManager)
+- [x] RAGCollectionManager: Aktive Collections werden oben sortiert, inaktive alphabetisch darunter
+- [x] RAGCollectionManager: Aktivierungszustand wird in App-Settings unter Key `rag_active_collections` (JSON-Array) persistiert
+- [x] RAGCollectionManager: Badge zeigt Anzahl aktiver Collections in der Ueberschrift
+- [x] RAGCollectionManager: State wird beim Laden parallel aus `/admin/rag-collections` und `/admin/settings` bezogen
 
 ---
 

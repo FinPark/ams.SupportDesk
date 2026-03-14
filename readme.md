@@ -192,7 +192,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 - **PhasenTexteManager** – Automatische Texte je Ticket-Status (eingeklappt/aufklappbar, hellblaue Eingabefelder)
 - **ModelleManager** – KI-Modelle konfigurieren und als Standard setzen
 - **MCPServerManager** – MCP-Server registrieren und synchronisieren; Klick auf Card oeffnet Bearbeitungsformular, aktive Server werden oben sortiert, Toggle-Button fuer Aktiv/Inaktiv, verzoegertes Umsortieren nach Toggle
-- **RAGCollectionManager** – RAG-Collections verwalten; Backend erkennt RAG-URL automatisch aus Docker-Konvention
+- **RAGCollectionManager** – RAG-Collections verwalten; Toggle zum Aktivieren/Deaktivieren pro Collection (analog zu MCP-Server), aktive Collections werden oben sortiert, Aktivierungszustand wird in App-Settings persistiert (`rag_active_collections`)
 - **SettingsManager** – Allgemeine App-Einstellungen
 
 ### Custom Hooks

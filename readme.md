@@ -102,16 +102,17 @@ curl -I http://ams-supportdesk.192.168.x.x.sslip.io/api/health
 
 Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 
-| Variable      | Beschreibung                          | Beispielwert                    |
-|---------------|---------------------------------------|---------------------------------|
-| DB_HOST       | Datenbankhost (Docker-Service-Name)   | `db`                            |
-| DB_PORT       | Datenbankport                         | `5432`                          |
-| DB_NAME       | Datenbankname                         | `supportdesk`                   |
-| DB_USER       | Datenbankbenutzer                     | `supportdesk`                   |
-| DB_PASSWORD   | Datenbankpasswort (sicheres Passwort) | `CHANGE_ME_secure_password`     |
-| REDIS_URL     | Redis-Verbindungs-URL                 | `redis://redis:6379/0`          |
+| Variable          | Beschreibung                                   | Beispielwert                     |
+|-------------------|------------------------------------------------|----------------------------------|
+| DB_HOST           | Datenbankhost (Docker-Service-Name)            | `db`                             |
+| DB_PORT           | Datenbankport                                  | `5432`                           |
+| DB_NAME           | Datenbankname                                  | `supportdesk`                    |
+| DB_USER           | Datenbankbenutzer                              | `supportdesk`                    |
+| DB_PASSWORD       | Datenbankpasswort (sicheres Passwort)          | `CHANGE_ME_secure_password`      |
+| REDIS_URL         | Redis-Verbindungs-URL                          | `redis://redis:6379/0`           |
 | SECRET_KEY        | JWT/Session-Secret (langer Zufallsstring)      | `CHANGE_ME_random_long_string`   |
 | SERVER_DOMAIN     | THoster-Domain fuer Traefik                    | `192.168.x.x.sslip.io`          |
+| INTERNAL_API_KEY  | Internes Service-Token (MCP-Server -> Backend) | `CHANGE_ME_internal_token`       |
 | OPENAI_API_KEY    | API-Key fuer OpenAI (optional)                 | `sk-...`                         |
 | ANTHROPIC_API_KEY | API-Key fuer Anthropic Claude (optional)       | `sk-ant-...`                     |
 
@@ -233,18 +234,22 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 
 **Technologien:** FastMCP 2.x | httpx
 
-Der MCP-Server stellt 6 Tools fuer Claude Code und den Agent Hub bereit:
+Der MCP-Server stellt 6 Tools fuer Claude Code und den Agent Hub bereit. Alle Aufrufe werden mit dem internen Service-Token (`X-Internal-Token` Header) gegen das Backend authentifiziert – ohne Cookie-Session.
 
-| Tool                 | Beschreibung                                    |
-|----------------------|-------------------------------------------------|
-| `tickets_auflisten`  | Alle offenen/zugewiesenen Tickets auflisten     |
-| `ticket_details`     | Detailinformationen zu einem Ticket abrufen     |
-| `ticket_suchen`      | Tickets nach Stichwort/Kriterien suchen         |
-| `eingangskorb_anzeigen` | Eingangskorb-Tickets anzeigen               |
-| `kunde_suchen`       | Kunden nach Name/Kuerzel suchen                 |
-| `tags_auflisten`     | Alle verfuegbaren Tags auflisten                |
+| Tool                    | Parameter             | Beschreibung                                                    |
+|-------------------------|-----------------------|-----------------------------------------------------------------|
+| `tickets_auflisten`     | `status`, `limit`     | Tickets auflisten; gibt Ticketnummern + Supporter-Kuerzel aus   |
+| `ticket_details`        | `ticket_nummer: int`  | Details zu einem Ticket per Ticketnummer (z.B. `1001`)          |
+| `ticket_suchen`         | `query`, `limit`      | Volltext-Suche in Titel/Kundenname; gibt Ticketnummern aus      |
+| `eingangskorb_anzeigen` | –                     | Unbearbeitete Tickets im Eingangskorb mit Ticketnummer          |
+| `kunde_suchen`          | `query`               | Kunden nach Name oder Kundennummer suchen                       |
+| `tags_auflisten`        | `limit`               | Beliebteste Tags ueber alle Tickets auflisten                   |
 
 **Endpunkt:** `http://ams-supportdesk.{SERVER_DOMAIN}/mcp` (Streamable HTTP)
+
+### MCP-Server Authentifizierung
+
+Der MCP-Server kommuniziert intern mit dem Backend ausschliesslich ueber den `X-Internal-Token` Header. Das Backend prueft diesen gegen `INTERNAL_API_KEY` und erstellt bei Bedarf automatisch einen `SYSTEM`-Supporter-Eintrag. Cookie-basierte Authentifizierung ist fuer den MCP-Server nicht erforderlich.
 
 ---
 

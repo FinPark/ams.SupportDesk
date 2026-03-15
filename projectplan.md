@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 15.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen
 
 ---
 
@@ -21,6 +21,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 1.2: RAG-Collections Toggle | 14.03.2026 | Abgeschlossen |
 | Phase 2: KI-Integration (LLM-Router, Recherche-Chat, Ticketnummern) | 14.03.2026 | Abgeschlossen |
 | Phase 3: Statistik & Analytics | 15.03.2026 | Abgeschlossen |
+| Phase 3.1: MCP-Server Auth-Fix & Tool-Verbesserungen | 15.03.2026 | Abgeschlossen |
 
 ---
 
@@ -118,12 +119,13 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 
 - [x] FastMCP 2.x Setup mit Streamable HTTP
 - [x] Traefik-Integration (Prio 40, /mcp Pfad)
-- [x] Tool: `tickets_auflisten`
-- [x] Tool: `ticket_details`
-- [x] Tool: `ticket_suchen`
-- [x] Tool: `eingangskorb_anzeigen`
+- [x] Tool: `tickets_auflisten` (mit Ticketnummern + Supporter-Kuerzel)
+- [x] Tool: `ticket_details` (Parameter: `ticket_nummer: int`)
+- [x] Tool: `ticket_suchen` (mit vollstaendigen Ticketnummern)
+- [x] Tool: `eingangskorb_anzeigen` (mit Ticketnummern)
 - [x] Tool: `kunde_suchen`
 - [x] Tool: `tags_auflisten`
+- [x] Internes Service-Token (`X-Internal-Token`) fuer Auth ohne Cookie (Phase 3.1)
 
 ---
 
@@ -233,6 +235,34 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] `components/admin/SettingsManager.tsx` – Nur allgemeine Settings (ohne KI-Prompt)
 - [x] `components/admin/KISettingsManager.tsx` – KI-Einstellungen: konfigurierbarer Systemprompt
 - [x] `components/shared/TemplatePicker.tsx` – Wiederverwendbarer Template-Picker mit /-Suche und Keyboard-Navigation
+
+---
+
+## Phase 3.1 – MCP-Server Auth-Fix & Tool-Verbesserungen (15.03.2026)
+
+### Backend – Internes Service-Token
+
+- [x] `backend/app/config.py` – Neue Setting `internal_api_key` (leer = deaktiviert)
+- [x] `backend/app/middleware/auth.py` – `get_current_supporter` prueft zuerst `X-Internal-Token` Header
+  - [x] Hilfsfunktion `_get_or_create_system_supporter()` erstellt automatisch SYSTEM-Supporter bei Bedarf
+  - [x] Internes Token hat Vorrang vor Cookie-Session; kein Cookie erforderlich fuer Dienst-zu-Dienst-Kommunikation
+- [x] `.env` / `.env.example` – `INTERNAL_API_KEY` Variable hinzugefuegt (Pflichtfeld fuer Produktion)
+- [x] `docker-compose.yml` – `INTERNAL_API_KEY` Umgebungsvariable an MCP-Server-Service weitergegeben
+
+### MCP-Server – Tool-Verbesserungen
+
+- [x] `mcp-server/server.py` – `INTERNAL_API_KEY` aus Umgebungsvariable lesen
+- [x] Hilfsfunktion `_headers()` – sendet `X-Internal-Token` Header bei jedem Backend-Aufruf (wenn Key gesetzt)
+- [x] `ticket_details` – Parameter von `ticket_id: str` auf `ticket_nummer: int` umgestellt
+  - [x] Neue Hilfsfunktion `_find_ticket_by_nummer()` fuer Nummer-basierte Ticket-Suche
+- [x] `tickets_auflisten` – Ausgabe jetzt mit Ticketnummern (`#1001`) statt UUID-Fragmenten; Supporter-Kuerzel in Ausgabe
+- [x] `ticket_suchen` – Ausgabe mit vollstaendiger Ticketnummer statt gekuerzter UUID
+- [x] `eingangskorb_anzeigen` – Ausgabe mit Ticketnummer statt UUID-Fragment
+- [x] Tool-Beschreibungen erklaeren, dass Ticketnummern fuer `ticket_details` verwendet werden koennen
+
+### Dokumentation
+
+- [x] Konzept-Dokument (`THoster ams.SupportDesk Tool Konzept...`) – ASCII-Layouts durch Mermaid ersetzt, Phasenplan und offene Punkte aktualisiert
 
 ---
 

@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.models.supporter import Supporter
 from app.models.kunde import Kunde
@@ -23,10 +24,28 @@ SESSION_COOKIE = "supportdesk_session"
 
 # --- Supporter Auth ---
 
+async def _get_or_create_system_supporter(db: AsyncSession) -> Supporter:
+    """System-Supporter für interne Service-Aufrufe (MCP-Server etc.)."""
+    result = await db.execute(select(Supporter).where(Supporter.kuerzel == "SYSTEM"))
+    supporter = result.scalar_one_or_none()
+    if not supporter:
+        supporter = Supporter(kuerzel="SYSTEM", name="System (MCP)")
+        db.add(supporter)
+        await db.commit()
+        await db.refresh(supporter)
+    return supporter
+
+
 async def get_current_supporter(
     request: Request, db: AsyncSession = Depends(get_db)
 ) -> Supporter:
-    """Dependency: Aktuellen Supporter aus Session-Cookie lesen."""
+    """Dependency: Supporter aus Session-Cookie oder internem Service-Token lesen."""
+    # Option 1: Interner Service-Token (MCP-Server, etc.)
+    internal_token = request.headers.get("X-Internal-Token")
+    if internal_token and settings.internal_api_key and internal_token == settings.internal_api_key:
+        return await _get_or_create_system_supporter(db)
+
+    # Option 2: Session-Cookie
     supporter_id = request.cookies.get(SESSION_COOKIE)
     if not supporter_id:
         raise HTTPException(status_code=401, detail="Nicht angemeldet")

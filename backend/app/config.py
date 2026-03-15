@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # THoster
     server_domain: str = "localhost"
 
+    # Internes Service-Token (MCP-Server → Backend)
+    internal_api_key: str = ""
+
     # API-Keys (optional, wenn nicht über ams-connections verwaltet)
     openai_api_key: str = ""
     anthropic_api_key: str = ""

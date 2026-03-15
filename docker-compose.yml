@@ -47,6 +47,7 @@ services:
     environment:
       SERVER_DOMAIN: ${SERVER_DOMAIN:-localhost}
       BACKEND_URL: http://backend:8000
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}
     env_file: .env
     networks:
       - default

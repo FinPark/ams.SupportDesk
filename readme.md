@@ -392,7 +392,13 @@ Der Backend-Router probiert beim Abruf von RAG-Collections mehrere Kandidaten-UR
 
 **RAG-Abbruch bei leeren Ergebnissen:** Sind RAG-Collections aktiv, aber liefern keine Chunks, wird der LLM-Aufruf uebersprungen und dem Supporter eine entsprechende Hinweismeldung angezeigt.
 
-**RAG-Query-Bereinigung:** Kunden-Bubble-Transfers werden vor der RAG-Suche bereinigt. Der Prefix "Kontext aus dem Kundengespräch" und Markdown-Formatierungen werden entfernt, sodass nur die reinen Kundenaussagen als Suchquery verwendet werden.
+**RAG-Query-Bereinigung (`_clean_rag_query()`):** Kunden-Bubble-Transfers werden vor der RAG-Suche bereinigt. Der Prefix "Kontext aus dem Kundengespräch" und Markdown-Formatierungen werden entfernt. Nur die reinen Kundennachrichten werden als Suchquery verwendet — Support-Rückfragen werden ausgelassen, da sie die Suche verwässern. Der vollständige Kontext wird weiterhin unverändert an das LLM übergeben.
+
+**RAG-Suche optimiert:** `top_k=10`, `mode: hybrid`, Ergebnisse nach Score sortiert, Top-8-Chunks werden verwendet (statt nur der ersten Chunks der ersten Dokumente).
+
+**Supporter-Nachrichten markierbar:** Im KundenChat können Supporter-Nachrichten ebenfalls per Klick für den Bubble-Transfer an die KI markiert werden (nicht nur Kundennachrichten). Markierte Supporter-Bubbles zeigen den Markier-Indikator rechts und werden in dunklerem Blau dargestellt.
+
+**Kontext-Format beim Bubble-Transfer:** Bei gemischten Markierungen (Kunde + Support) werden "Kunde:"/"Support:"-Präfixe ergänzt. Bei reinen Kundennachrichten wird der Prefix weggelassen.
 
 ---
 

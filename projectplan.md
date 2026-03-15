@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 15.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen
 
 ---
 
@@ -23,6 +23,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 3: Statistik & Analytics | 15.03.2026 | Abgeschlossen |
 | Phase 3.1: MCP-Server Auth-Fix & Tool-Verbesserungen | 15.03.2026 | Abgeschlossen |
 | Phase 3.2: RAG-Fixes & MCP-Datumserweiterung | 15.03.2026 | Abgeschlossen |
+| Phase 3.3: RAG-Query-Optimierung & Chat-UI-Verbesserungen | 15.03.2026 | Abgeschlossen |
 
 ---
 
@@ -280,6 +281,30 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 
 - [x] `tickets_auflisten`: Erstell- und Aktualisierungsdatum (`created_at`, `updated_at`) in der Ausgabe ergaenzt
 - [x] Supporter-Kuerzel-Anzeige robuster: Fallback auf "–" statt "k.A." wenn kein Kuerzel vorhanden
+
+---
+
+## Phase 3.3 – RAG-Query-Optimierung & Chat-UI-Verbesserungen (15.03.2026)
+
+### Backend – KI-Recherche RAG-Query (`routers/ki_recherche.py`)
+
+- [x] Neue Hilfsfunktion `_clean_rag_query()` – extrahiert nur Kundennachrichten aus dem Bubble-Transfer-Kontext
+  - [x] Prefix "Kontext aus dem Kundengespräch" und Markdown-Formatierung werden entfernt
+  - [x] Nur Kundennachrichten fliessen in den RAG-Query (Support-Rückfragen werden ausgelassen)
+  - [x] Vollständiger Kontext geht weiterhin unverändert an das LLM
+- [x] RAG-Suche verbessert: `top_k` von 5 auf 10 erhöht
+- [x] RAG-Suche: `mode: hybrid` aktiviert (kombiniertäre Suche)
+- [x] RAG-Ergebnisse nach Score sortiert; Top 8 Chunks werden verwendet (statt nur erste Chunks der ersten Dokumente)
+
+### Frontend – KundenChat & TicketWorkspace
+
+- [x] `components/workspace/KundenChat.tsx` – Supporter-Nachrichten markierbar für KI-Transfer
+  - [x] Markier-Indikator rechts für Supporter-Bubbles (analog zu Kunden-Bubbles links)
+  - [x] Dunkleres Blau bei markierten Supporter-Nachrichten
+  - [x] Vorher konnten nur Kundennachrichten markiert werden
+- [x] `components/workspace/TicketWorkspace.tsx` – Kontext-Format beim Bubble-Transfer optimiert
+  - [x] Bei gemischten Nachrichten (Kunde + Support): "Kunde:"/"Support:"-Präfixe ergänzt
+  - [x] Bei reinen Kundennachrichten: kein Rollen-Prefix (saubereres Format)
 
 ---
 

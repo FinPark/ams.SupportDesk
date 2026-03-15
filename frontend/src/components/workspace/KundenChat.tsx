@@ -120,7 +120,7 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, onDeleteNa
               )}
               <Box
                 maxW="80%"
-                bg={isSupporter ? "blue.500" : isMarked ? "blue.50" : "white"}
+                bg={isSupporter ? (isMarked ? "blue.600" : "blue.500") : isMarked ? "blue.50" : "white"}
                 color={isSupporter ? "white" : "gray.800"}
                 px={4}
                 py={3}
@@ -128,17 +128,17 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, onDeleteNa
                 borderBottomRightRadius={isSupporter ? "sm" : "xl"}
                 borderBottomLeftRadius={isSupporter ? "xl" : "sm"}
                 shadow="sm"
-                cursor={!isSupporter ? "pointer" : undefined}
-                onClick={!isSupporter ? () => toggleMarkiert(msg.id) : undefined}
-                borderWidth={isMarked && !isSupporter ? 1 : 0}
-                borderColor="blue.300"
+                cursor="pointer"
+                onClick={() => toggleMarkiert(msg.id)}
+                borderWidth={isMarked ? 1 : 0}
+                borderColor={isSupporter ? "blue.200" : "blue.300"}
                 transition="all 0.15s"
               >
                 <HStack justify="space-between" mb={1}>
                   <Text fontSize="xs" fontWeight="bold" opacity={0.6}>
                     {isSupporter ? "Support" : "Kunde"}
-                    {isMarked && !isSupporter && (
-                      <Text as="span" color="blue.500" ml={2}>● markiert</Text>
+                    {isMarked && (
+                      <Text as="span" color={isSupporter ? "blue.100" : "blue.500"} ml={2}>● markiert</Text>
                     )}
                   </Text>
                   {isSupporter && (
@@ -170,7 +170,18 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, onDeleteNa
               </Box>
               {/* Markier-Indikator rechts für Supporter */}
               {isSupporter && (
-                <Box w="4px" ml={2} flexShrink={0} />
+                <Box
+                  w="4px"
+                  bg={isMarked ? "blue.400" : "transparent"}
+                  borderRadius="full"
+                  ml={2}
+                  cursor="pointer"
+                  _hover={{ bg: isMarked ? "blue.500" : "gray.300" }}
+                  onClick={() => toggleMarkiert(msg.id)}
+                  flexShrink={0}
+                  alignSelf="stretch"
+                  title={isMarked ? "Markierung entfernen" : "Für KI markieren"}
+                />
               )}
             </Box>
           )

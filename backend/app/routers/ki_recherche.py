@@ -58,6 +58,50 @@ def _build_system_prompt(ticket: Ticket, tags: list[str], custom_prompt: str | N
     )
 
 
+def _clean_rag_query(text: str) -> str:
+    """Kontext-Wrapper und Markdown aus dem Text entfernen für bessere RAG-Suche.
+
+    Bubble-Transfer sendet: 'Kontext aus dem Kundengespräch:\n\n**Kunde:**\nText...'
+    RAG braucht einen kurzen, präzisen Query — nicht alle Nachrichten zusammen.
+    Strategie: Alle Nachrichten extrahieren und zusammenfassen.
+    """
+    import re
+    if not text.startswith("Kontext aus dem Kundengespräch"):
+        return text
+    # Markdown-Fettdruck entfernen
+    cleaned = re.sub(r"\*\*", "", text)
+    # Nachrichten extrahieren nach Rolle
+    kunde_parts = []
+    support_parts = []
+    lines = cleaned.split("\n")
+    current_role = None
+    for line in lines:
+        line = line.strip()
+        if not line or line == "---":
+            current_role = None
+            continue
+        if line.startswith("Kontext aus dem Kundengespräch"):
+            continue
+        if line.startswith("Kunde:"):
+            current_role = "kunde"
+            rest = line[6:].strip()
+            if rest:
+                kunde_parts.append(rest)
+        elif line.startswith("Support:"):
+            current_role = "support"
+            rest = line[8:].strip()
+            if rest:
+                support_parts.append(rest)
+        elif current_role == "kunde":
+            kunde_parts.append(line)
+        elif current_role == "support":
+            support_parts.append(line)
+
+    # RAG-Query: Nur Kundennachrichten (enthalten das Thema),
+    # Support-Rückfragen weglassen (verwässern die Suche)
+    return " ".join(kunde_parts) if kunde_parts else " ".join(support_parts) or text
+
+
 def _ki_nachrichten_to_messages(nachrichten: list[KINachricht]) -> list[dict]:
     """KI-Nachrichten in LLM-Messages-Format umwandeln."""
     messages = []
@@ -290,19 +334,8 @@ async def send_nachricht(
         system_prompt = _build_system_prompt(ticket, tag_names, custom_prompt)
 
     # 4. RAG-Kontext laden (aktive Collections)
-    # RAG-Query bereinigen: Prefix "Kontext aus dem Kundengespräch" und Markdown entfernen
-    rag_query = inhalt
-    if rag_query.startswith("Kontext aus dem Kundengespräch"):
-        # Nur die eigentlichen Kundennachrichten extrahieren
-        lines = rag_query.split("\n")
-        cleaned = []
-        for line in lines:
-            line = line.strip().lstrip("*").rstrip("*").strip()
-            if line.startswith("Kunde:") or line.startswith("Support:"):
-                cleaned.append(line.split(":", 1)[1].strip())
-            elif line and line != "---" and not line.startswith("Kontext"):
-                cleaned.append(line)
-        rag_query = " ".join(cleaned) if cleaned else inhalt
+    # RAG-Query: Kontext-Wrapper und Markdown entfernen für bessere Suche
+    rag_query = _clean_rag_query(inhalt)
     rag_context = await _load_rag_context(db, rag_query, collection_ids)
     if rag_context:
         system_prompt += f"\n\n--- Wissensbasis (RAG) ---\n{rag_context}"
@@ -518,34 +551,38 @@ async def _load_rag_context(
                 resp = await client.post(url, json={
                     "query": query,
                     "collections": active_collections,
-                    "top_k": 5,
+                    "top_k": 10,
+                    "mode": "hybrid",
                 })
                 if resp.status_code == 200:
                     data = resp.json()
                     results = data if isinstance(data, list) else data.get("results", [])
                     if results:
-                        collected = []
+                        # Alle Chunks sammeln mit Score
+                        all_chunks: list[tuple[float, str]] = []
                         for r in results:
+                            source = r.get("original_filename", r.get("source", ""))
                             # Direkte text/content Felder (flaches Format)
                             text = r.get("text", r.get("content", ""))
                             if text:
-                                source = r.get("source", r.get("metadata", {}).get("source", ""))
+                                score = r.get("relevance_score", r.get("score", 0))
                                 entry = text
                                 if source:
                                     entry += f"\n(Quelle: {source})"
-                                collected.append(entry)
+                                all_chunks.append((score, entry))
                             # Verschachtelte chunks (ams-rag Format)
                             for chunk in r.get("chunks", []):
                                 ctext = chunk.get("content", chunk.get("text", ""))
                                 if ctext:
-                                    source = r.get("original_filename", "")
+                                    cscore = chunk.get("score", r.get("relevance_score", 0))
                                     entry = ctext
                                     if source:
                                         entry += f"\n(Quelle: {source})"
-                                    collected.append(entry)
-                            if len(collected) >= 5:
-                                break
-                        return "\n\n---\n\n".join(collected[:5])
+                                    all_chunks.append((cscore, entry))
+                        # Nach Score sortieren und Top 8 nehmen
+                        all_chunks.sort(key=lambda x: x[0], reverse=True)
+                        best = [text for _, text in all_chunks[:8]]
+                        return "\n\n---\n\n".join(best)
         except Exception as e:
             logger.debug(f"RAG-Suche fehlgeschlagen ({url}): {e}")
             continue

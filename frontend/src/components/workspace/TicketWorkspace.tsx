@@ -264,8 +264,15 @@ export default function TicketWorkspace({ supporter, onLogout }: Props) {
 
   // Markierte Nachrichten an KI-Chat senden
   const handleSendToKI = (markierte: Nachricht[]) => {
+    const hasMultipleRoles = new Set(markierte.map((m) => m.rolle)).size > 1
+
     const kontext = markierte
-      .map((m) => `**${m.rolle === "kunde" ? "Kunde" : "Support"}:**\n${m.inhalt_markdown}`)
+      .map((m) => {
+        if (hasMultipleRoles) {
+          return `**${m.rolle === "kunde" ? "Kunde" : "Support"}:**\n${m.inhalt_markdown}`
+        }
+        return m.inhalt_markdown
+      })
       .join("\n\n---\n\n")
 
     sendToKI(`Kontext aus dem Kundengespräch:\n\n${kontext}`)

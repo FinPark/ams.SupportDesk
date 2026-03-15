@@ -238,7 +238,7 @@ Der MCP-Server stellt 6 Tools fuer Claude Code und den Agent Hub bereit. Alle Au
 
 | Tool                    | Parameter             | Beschreibung                                                    |
 |-------------------------|-----------------------|-----------------------------------------------------------------|
-| `tickets_auflisten`     | `status`, `limit`     | Tickets auflisten; gibt Ticketnummern + Supporter-Kuerzel aus   |
+| `tickets_auflisten`     | `status`, `limit`     | Tickets auflisten; gibt Ticketnummern, Supporter-Kuerzel, Erstell- und Aktualisierungsdatum aus |
 | `ticket_details`        | `ticket_nummer: int`  | Details zu einem Ticket per Ticketnummer (z.B. `1001`)          |
 | `ticket_suchen`         | `query`, `limit`      | Volltext-Suche in Titel/Kundenname; gibt Ticketnummern aus      |
 | `eingangskorb_anzeigen` | –                     | Unbearbeitete Tickets im Eingangskorb mit Ticketnummer          |
@@ -385,6 +385,14 @@ Der Backend-Router probiert beim Abruf von RAG-Collections mehrere Kandidaten-UR
 1. `http://{docker_name}-backend-1:8000/api/v1/collections` (Docker-interne Konvention)
 2. `http://{tool-name}.{SERVER_DOMAIN}/api/v1/collections` (Traefik-Hostname)
 3. Konfigurierte URL aus `rag_server.url` (falls vorhanden)
+
+**RAG Response-Parsing:** ams-rag liefert verschachtelte `chunks` innerhalb der `results`. Der Parser unterstuetzt beide Formate:
+- Flaches Format: `results[].text` / `results[].content`
+- Verschachteltes Format (ams-rag): `results[].chunks[].content`
+
+**RAG-Abbruch bei leeren Ergebnissen:** Sind RAG-Collections aktiv, aber liefern keine Chunks, wird der LLM-Aufruf uebersprungen und dem Supporter eine entsprechende Hinweismeldung angezeigt.
+
+**RAG-Query-Bereinigung:** Kunden-Bubble-Transfers werden vor der RAG-Suche bereinigt. Der Prefix "Kontext aus dem Kundengespräch" und Markdown-Formatierungen werden entfernt, sodass nur die reinen Kundenaussagen als Suchquery verwendet werden.
 
 ---
 

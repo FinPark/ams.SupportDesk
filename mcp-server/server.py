@@ -46,10 +46,15 @@ async def tickets_auflisten(status: str = "", limit: int = 20) -> str:
     lines = []
     for t in tickets[:limit]:
         tags = ", ".join(f"#{tag['tag']}" for tag in t.get("tags", []))
+        created = t.get("created_at", "")[:19].replace("T", " ")
+        updated = t.get("updated_at", "")[:19].replace("T", " ")
+        supporter = t.get("supporter_kuerzel") or "–"
         line = (
             f"- **#{t['nummer']} {t['titel']}** ({t['status']})"
             f" · Kunde: {t.get('kunde_name', 'k.A.')}"
-            f" · Supporter: {t.get('supporter_kuerzel', 'k.A.')}"
+            f" · Supporter: {supporter}"
+            f" · Erstellt: {created}"
+            f" · Aktualisiert: {updated}"
         )
         if tags:
             line += f" · {tags}"

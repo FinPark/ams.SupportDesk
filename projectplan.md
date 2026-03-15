@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 15.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen
 
 ---
 
@@ -22,6 +22,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 2: KI-Integration (LLM-Router, Recherche-Chat, Ticketnummern) | 14.03.2026 | Abgeschlossen |
 | Phase 3: Statistik & Analytics | 15.03.2026 | Abgeschlossen |
 | Phase 3.1: MCP-Server Auth-Fix & Tool-Verbesserungen | 15.03.2026 | Abgeschlossen |
+| Phase 3.2: RAG-Fixes & MCP-Datumserweiterung | 15.03.2026 | Abgeschlossen |
 
 ---
 
@@ -263,6 +264,22 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 ### Dokumentation
 
 - [x] Konzept-Dokument (`THoster ams.SupportDesk Tool Konzept...`) – ASCII-Layouts durch Mermaid ersetzt, Phasenplan und offene Punkte aktualisiert
+
+---
+
+## Phase 3.2 – RAG-Fixes & MCP-Datumserweiterung (15.03.2026)
+
+### Backend – KI-Recherche RAG-Fixes (`routers/ki_recherche.py`)
+
+- [x] `httpx` Import ergaenzt – fehlender Import verhinderte alle HTTP-Requests an den RAG-Server (silent fail)
+- [x] RAG Response-Parsing erweitert: unterstuetzt jetzt verschachteltes ams-rag Format (`results[].chunks[].content`) zusaetzlich zum flachen Format (`results[].text` / `results[].content`)
+- [x] RAG-Abbruch bei leeren Ergebnissen: Sind Collections gewaehlt, liefern aber keine Chunks, wird LLM-Aufruf uebersprungen und Supporter erhaelt Hinweismeldung "Keine Informationen aus dem RAG ermittelt"
+- [x] RAG-Query-Bereinigung: Bubble-Transfer-Prefix ("Kontext aus dem Kundengespräch:\n\n**Kunde:**\n...") und Markdown-Formatierung werden vor RAG-Suche entfernt; nur echte Kundenaussagen werden als Suchquery verwendet
+
+### MCP-Server – Tool-Erweiterung (`mcp-server/server.py`)
+
+- [x] `tickets_auflisten`: Erstell- und Aktualisierungsdatum (`created_at`, `updated_at`) in der Ausgabe ergaenzt
+- [x] Supporter-Kuerzel-Anzeige robuster: Fallback auf "–" statt "k.A." wenn kein Kuerzel vorhanden
 
 ---
 

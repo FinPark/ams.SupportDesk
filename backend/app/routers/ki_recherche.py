@@ -5,6 +5,7 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -289,9 +290,35 @@ async def send_nachricht(
         system_prompt = _build_system_prompt(ticket, tag_names, custom_prompt)
 
     # 4. RAG-Kontext laden (aktive Collections)
-    rag_context = await _load_rag_context(db, inhalt, collection_ids)
+    # RAG-Query bereinigen: Prefix "Kontext aus dem Kundengespräch" und Markdown entfernen
+    rag_query = inhalt
+    if rag_query.startswith("Kontext aus dem Kundengespräch"):
+        # Nur die eigentlichen Kundennachrichten extrahieren
+        lines = rag_query.split("\n")
+        cleaned = []
+        for line in lines:
+            line = line.strip().lstrip("*").rstrip("*").strip()
+            if line.startswith("Kunde:") or line.startswith("Support:"):
+                cleaned.append(line.split(":", 1)[1].strip())
+            elif line and line != "---" and not line.startswith("Kontext"):
+                cleaned.append(line)
+        rag_query = " ".join(cleaned) if cleaned else inhalt
+    rag_context = await _load_rag_context(db, rag_query, collection_ids)
     if rag_context:
         system_prompt += f"\n\n--- Wissensbasis (RAG) ---\n{rag_context}"
+    elif collection_ids:
+        # RAG war gewünscht, aber keine Ergebnisse → abbrechen
+        error_msg = KINachricht(
+            verlauf_id=verlauf.id,
+            rolle="ki",
+            inhalt_markdown="**Keine Informationen aus dem RAG ermittelt.**\n\nDie Wissensbasis hat zu dieser Anfrage keine relevanten Ergebnisse geliefert.",
+        )
+        db.add(error_msg)
+        verlauf.zuletzt_aktiv = datetime.now(timezone.utc)
+        await db.commit()
+        await db.refresh(supporter_msg)
+        await db.refresh(error_msg)
+        return _build_response(supporter_msg, error_msg)
 
     # 5. Chat-History aufbauen
     existing_messages = _ki_nachrichten_to_messages(
@@ -497,16 +524,28 @@ async def _load_rag_context(
                     data = resp.json()
                     results = data if isinstance(data, list) else data.get("results", [])
                     if results:
-                        chunks = []
-                        for r in results[:5]:
+                        collected = []
+                        for r in results:
+                            # Direkte text/content Felder (flaches Format)
                             text = r.get("text", r.get("content", ""))
-                            source = r.get("source", r.get("metadata", {}).get("source", ""))
                             if text:
-                                chunk = text
+                                source = r.get("source", r.get("metadata", {}).get("source", ""))
+                                entry = text
                                 if source:
-                                    chunk += f"\n(Quelle: {source})"
-                                chunks.append(chunk)
-                        return "\n\n---\n\n".join(chunks)
+                                    entry += f"\n(Quelle: {source})"
+                                collected.append(entry)
+                            # Verschachtelte chunks (ams-rag Format)
+                            for chunk in r.get("chunks", []):
+                                ctext = chunk.get("content", chunk.get("text", ""))
+                                if ctext:
+                                    source = r.get("original_filename", "")
+                                    entry = ctext
+                                    if source:
+                                        entry += f"\n(Quelle: {source})"
+                                    collected.append(entry)
+                            if len(collected) >= 5:
+                                break
+                        return "\n\n---\n\n".join(collected[:5])
         except Exception as e:
             logger.debug(f"RAG-Suche fehlgeschlagen ({url}): {e}")
             continue

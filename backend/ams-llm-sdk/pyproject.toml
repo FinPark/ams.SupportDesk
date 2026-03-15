@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ams-llm"
+version = "0.1.0"
+description = "Python SDK fuer ams.Connections — zentrale LLM-Verbindungen der THoster-Plattform"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.25",
+    "ams-thoster",
+]

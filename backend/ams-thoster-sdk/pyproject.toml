@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ams-thoster"
+version = "0.1.0"
+description = "Python SDK fuer THoster — Tool-Registrierung, Service Discovery und Health-Management"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.25",
+]
+
+[project.optional-dependencies]
+fastapi = ["fastapi>=0.100"]

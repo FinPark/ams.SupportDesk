@@ -1,12 +1,14 @@
 """ams.SupportDesk Backend – FastAPI Application."""
 
+import asyncio
+import logging
 from contextlib import asynccontextmanager
 
-import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from ams_thoster import ThosterClient
+from ams_thoster.routes import thoster_routes
 
-from app.config import settings
 from app.database import Base, engine
 from app.models import (
     Supporter, Kunde, Ticket, TicketTag,
@@ -15,6 +17,8 @@ from app.models import (
     Template, PhasenText, MCPServerRegistry, AppSetting,
 )
 
+logger = logging.getLogger(__name__)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,8 +26,8 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    # Beim THoster registrieren
-    await _register_at_thoster()
+    # Beim THoster registrieren (best-effort, im Hintergrund)
+    asyncio.create_task(_register_at_thoster())
 
     yield
 
@@ -31,53 +35,35 @@ async def lifespan(app: FastAPI):
 
 
 async def _register_at_thoster():
-    """Auto-Registrierung beim THoster (best-effort, mit Retry)."""
-    import asyncio
-    import logging
-
-    logger = logging.getLogger(__name__)
-    payload = {
-        "name": "ams-supportdesk",
-        "description": "KI-gestütztes Support-Tool – Chat statt Telefon & E-Mail",
-        "developer": "André Finken",
-        "developer_email": "a.Finken@ams-erp.com",
-        "openapi_path": "/api/openapi.json",
-        "docker_project": "amssupportdesk",
-        "health_check_url": "http://amssupportdesk-frontend-1:80",
-        "email_if_down": True,
-        "all_users": True,
-        "tech_stack": "React/Chakra UI + FastAPI + PostgreSQL + Redis + FastMCP",
-        "version": "1.0.0",
-    }
-
-    register_urls = [
-        "http://thoster-backend:8001/api/v1/tools/register",
-        f"http://{settings.server_domain}/api/v1/tools/register",
-    ]
-
+    """Auto-Registrierung beim THoster via SDK (best-effort, mit Retry)."""
     for attempt in range(3):
-        for url in register_urls:
-            try:
-                async with httpx.AsyncClient(timeout=10) as client:
-                    resp = await client.post(url, json=payload)
-                    if resp.status_code < 400:
-                        logger.info(f"THoster-Registrierung erfolgreich via {url}")
-                        return
-                    logger.warning(f"THoster-Registrierung fehlgeschlagen ({url}): HTTP {resp.status_code}")
-            except Exception as e:
-                logger.debug(f"THoster nicht erreichbar ({url}): {e}")
-                continue
-
-        if attempt < 2:
-            logger.info(f"THoster-Registrierung: Retry in 5s (Versuch {attempt + 2}/3)")
-            await asyncio.sleep(5)
+        try:
+            thoster = ThosterClient(tool_name="ams-supportdesk")
+            thoster.register(
+                description="KI-gestuetztes Support-Tool – Chat statt Telefon & E-Mail",
+                developer="Andre Finken",
+                developer_email="a.Finken@ams-erp.com",
+                openapi_path="/api/openapi.json",
+                docker_project="amssupportdesk",
+                health_check_url="http://amssupportdesk-frontend-1:80",
+                email_if_down=True,
+                all_users=True,
+                tech_stack="React/Chakra UI + FastAPI + PostgreSQL + Redis + FastMCP",
+                version="1.0.0",
+            )
+            logger.info("THoster-Registrierung erfolgreich")
+            return
+        except Exception as e:
+            logger.debug(f"THoster-Registrierung Versuch {attempt + 1}/3: {e}")
+            if attempt < 2:
+                await asyncio.sleep(5)
 
     logger.warning("THoster-Registrierung fehlgeschlagen nach 3 Versuchen")
 
 
 app = FastAPI(
     title="ams.SupportDesk API",
-    description="KI-gestütztes Support-Tool",
+    description="KI-gestuetztes Support-Tool",
     version="1.0.0",
     lifespan=lifespan,
     docs_url="/api/docs",
@@ -93,27 +79,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --- THoster Pflicht-Endpoints (via SDK) ---
 
-# --- Pflicht-Endpoints (THoster-Standard) ---
-
-@app.get("/registered")
-@app.get("/api/registered")
-async def get_registration():
-    return {
-        "name": "ams-supportdesk",
-        "description": "KI-gestütztes Support-Tool – Chat statt Telefon & E-Mail",
-        "developer": "André Finken",
-        "developer_email": "a.Finken@ams-erp.com",
-        "openapi_path": "/api/openapi.json",
-        "docker_project": "amssupportdesk",
-        "health_check_url": "http://amssupportdesk-frontend-1:80",
+_thoster_router = thoster_routes(
+    name="ams-supportdesk",
+    description="KI-gestuetztes Support-Tool – Chat statt Telefon & E-Mail",
+    developer="Andre Finken",
+    developer_email="a.Finken@ams-erp.com",
+    openapi_path="/api/openapi.json",
+    docker_project="amssupportdesk",
+    health_check_url="http://amssupportdesk-frontend-1:80",
+    email_if_down=True,
+    all_users=True,
+    extra_fields={
+        "tech_stack": "React/Chakra UI + FastAPI + PostgreSQL + Redis + FastMCP",
         "version": "1.0.0",
-    }
-
-
-@app.get("/api/health")
-async def health_check():
-    return {"status": "ok"}
+    },
+)
+app.include_router(_thoster_router)
+# Traefik routet /api/* ans Backend — /registered braucht auch /api/registered Alias
+app.include_router(_thoster_router, prefix="/api")
 
 
 # --- Router einbinden ---

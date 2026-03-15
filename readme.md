@@ -102,19 +102,20 @@ curl -I http://ams-supportdesk.192.168.x.x.sslip.io/api/health
 
 Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 
-| Variable          | Beschreibung                                   | Beispielwert                     |
-|-------------------|------------------------------------------------|----------------------------------|
-| DB_HOST           | Datenbankhost (Docker-Service-Name)            | `db`                             |
-| DB_PORT           | Datenbankport                                  | `5432`                           |
-| DB_NAME           | Datenbankname                                  | `supportdesk`                    |
-| DB_USER           | Datenbankbenutzer                              | `supportdesk`                    |
-| DB_PASSWORD       | Datenbankpasswort (sicheres Passwort)          | `CHANGE_ME_secure_password`      |
-| REDIS_URL         | Redis-Verbindungs-URL                          | `redis://redis:6379/0`           |
-| SECRET_KEY        | JWT/Session-Secret (langer Zufallsstring)      | `CHANGE_ME_random_long_string`   |
-| SERVER_DOMAIN     | THoster-Domain fuer Traefik                    | `192.168.x.x.sslip.io`          |
-| INTERNAL_API_KEY  | Internes Service-Token (MCP-Server -> Backend) | `CHANGE_ME_internal_token`       |
-| OPENAI_API_KEY    | API-Key fuer OpenAI (optional)                 | `sk-...`                         |
-| ANTHROPIC_API_KEY | API-Key fuer Anthropic Claude (optional)       | `sk-ant-...`                     |
+| Variable               | Beschreibung                                   | Beispielwert                     |
+|------------------------|------------------------------------------------|----------------------------------|
+| DB_HOST                | Datenbankhost (Docker-Service-Name)            | `db`                             |
+| DB_PORT                | Datenbankport                                  | `5432`                           |
+| DB_NAME                | Datenbankname                                  | `supportdesk`                    |
+| DB_USER                | Datenbankbenutzer                              | `supportdesk`                    |
+| DB_PASSWORD            | Datenbankpasswort (sicheres Passwort)          | `CHANGE_ME_secure_password`      |
+| REDIS_URL              | Redis-Verbindungs-URL                          | `redis://redis:6379/0`           |
+| SECRET_KEY             | JWT/Session-Secret (langer Zufallsstring)      | `CHANGE_ME_random_long_string`   |
+| SERVER_DOMAIN          | THoster-Domain fuer Traefik                    | `192.168.x.x.sslip.io`          |
+| INTERNAL_API_KEY       | Internes Service-Token (MCP-Server -> Backend) | `CHANGE_ME_internal_token`       |
+| AMS_CONNECTIONS_URL    | ams-connections Service URL (Docker-intern)    | `http://ams-connections-backend-1:8000` |
+
+**Hinweis:** API-Keys fuer OpenAI, Anthropic, Groq usw. werden nicht mehr lokal konfiguriert. Sie werden vom ams-llm SDK automatisch ueber den ams-connections Service abgerufen.
 
 ---
 
@@ -135,7 +136,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 
 ## Backend
 
-**Technologien:** FastAPI 0.115 | SQLAlchemy 2.0 async | asyncpg | Pydantic 2 | Redis 5 | WebSockets | httpx (LLM-Aufrufe)
+**Technologien:** FastAPI 0.115 | SQLAlchemy 2.0 async | asyncpg | Pydantic 2 | Redis 5 | WebSockets | httpx (LLM-Aufrufe) | ams-llm SDK | ams-thoster SDK
 
 ### Datenmodelle (13)
 
@@ -253,11 +254,32 @@ Der MCP-Server kommuniziert intern mit dem Backend ausschliesslich ueber den `X-
 
 ---
 
+## SDK-Integration
+
+### ams-llm SDK (`backend/ams-llm-sdk/`)
+
+Das ams-llm SDK (aus `github.com/FinPark/ams.Connection`) uebernimmt die gesamte LLM-Integration:
+
+- **`LLMClient`** – Service Discovery, Connection-Listing und API-Key-Abruf aus dem zentralen ams-connections Service
+- **`build_chat_url()` / `build_headers()`** – URL- und Auth-Header-Aufbau pro Connection
+- **`connections_client.py`** – schlanker SDK-Wrapper (ersetzt manuellen HTTP-Client)
+- **`llm_router.py`** – eine async Funktion `complete()` statt 3 Klassen + Factory-Pattern (von 184 auf 90 Zeilen)
+
+### ams-thoster SDK (`backend/ams-thoster-sdk/`)
+
+Das ams-thoster SDK (aus `github.com/FinPark/ams.THoster`) uebernimmt die THoster-Integration:
+
+- **`ThosterClient.register()`** – ersetzt 40 Zeilen manuellen HTTP-Code durch 10 Zeilen
+- **`thoster_routes()`** – stellt `/registered` und `/api/health` Pflicht-Endpunkte automatisch bereit
+- Kein `import httpx` in `main.py` mehr erforderlich
+
+---
+
 ## KI-Recherche (Phase 2)
 
 Der Supporter-Arbeitsplatz verfuegt ueber einen vollstaendigen KI-Recherche-Chat:
 
-- **LLM-Router** (`services/llm_router.py`) – Abstraktion fuer OpenAI-kompatible Provider (OpenAI, Ollama, vLLM, Groq, Mistral) und Anthropic Claude; automatische Erkennung per `provider_type`
+- **LLM-Router** (`services/llm_router.py`) – `complete()` Funktion mit SDK-basierter URL/Auth; unterstuetzt OpenAI-kompatible Provider (OpenAI, Ollama, vLLM, Groq, Mistral) und Anthropic Claude
 - **KI-Recherche-API** (`/api/v1/ki-recherche`) – Verwaltet Recherche-Verlaeufe pro Ticket, speichert Konversationen, ruft LLM auf, integriert RAG-Kontext
 - **RAG-Integration** – Collections koennen pro Anfrage gezielt ausgewaehlt werden; Fallback auf `rag_active_collections` aus Settings
 - **Konfigurierbarer Systemprompt** – Prompt fuer den Recherche-Assistenten wird in `AppSetting` (Key: `ki_system_prompt`) gespeichert und ist im Admin-Bereich editierbar
@@ -333,17 +355,19 @@ ams.SupportDesk/
 ├── register-ams-supportdesk.json  # THoster-Registrierung
 │
 ├── backend/
-│   ├── Dockerfile
+│   ├── Dockerfile           # git + uv + SDK-Installation
 │   ├── pyproject.toml       # FastAPI + SQLAlchemy + asyncpg
+│   ├── ams-llm-sdk/         # Lokale SDK-Kopie (github.com/FinPark/ams.Connection)
+│   ├── ams-thoster-sdk/     # Lokale SDK-Kopie (github.com/FinPark/ams.THoster)
 │   └── app/
-│       ├── main.py          # FastAPI-App, CORS, Router-Registrierung
-│       ├── config.py        # Pydantic Settings
+│       ├── main.py          # FastAPI-App, ThosterClient, thoster_routes()
+│       ├── config.py        # Pydantic Settings (ohne lokale API-Keys)
 │       ├── database.py      # Async SQLAlchemy Engine
 │       ├── middleware/      # Auth-Middleware
 │       ├── models/          # 13 SQLAlchemy-Modelle
 │       ├── routers/         # 13 API-Router (inkl. ki_recherche, statistik)
 │       ├── schemas/         # Pydantic-Schemas
-│       └── services/        # ConnectionManager, ConnectionsClient, LLMRouter
+│       └── services/        # ConnectionManager, ConnectionsClient (SDK), LLMRouter (SDK)
 │
 ├── frontend/
 │   ├── Dockerfile

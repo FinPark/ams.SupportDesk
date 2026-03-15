@@ -1,13 +1,20 @@
-"""LLM-Router: Abstraktion für verschiedene KI-Provider."""
+"""LLM-Router via ams-llm SDK.
+
+Nutzt das SDK fuer Connection-Management, URL-Aufbau und Auth-Header.
+Eigener httpx-Call fuer System-Prompt + Message-History Support.
+"""
 
 import logging
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
 import httpx
 
+from app.services.connections_client import get_client
+
 logger = logging.getLogger(__name__)
+
+ANTHROPIC_PROVIDERS = {"anthropic", "claude"}
 
 
 @dataclass
@@ -19,165 +26,123 @@ class CompletionResult:
     provider: str = ""
 
 
-class LLMProvider(ABC):
-    """Basis-Klasse für LLM-Provider."""
+async def complete(
+    connection_dict: dict,
+    messages: list[dict],
+    system_prompt: Optional[str] = None,
+    temperature: float = 0.7,
+    max_tokens: int = 4096,
+) -> CompletionResult:
+    """LLM-Completion mit SDK-basierter URL/Auth und eigenem httpx-Call.
 
-    def __init__(self, endpoint_url: str, api_key: str, provider_type: str):
-        self.endpoint_url = endpoint_url.rstrip("/")
-        self.api_key = api_key
-        self.provider_type = provider_type
+    Args:
+        connection_dict: Connection als dict (aus connections_client).
+        messages: Chat-History als OpenAI-Format messages.
+        system_prompt: Optionaler System-Prompt.
+        temperature: Sampling-Temperatur.
+        max_tokens: Max. Ausgabe-Tokens.
+    """
+    client = get_client()
 
-    @abstractmethod
-    async def complete(
-        self,
-        messages: list[dict],
-        model: str,
-        system_prompt: Optional[str] = None,
-        temperature: float = 0.7,
-        max_tokens: int = 4096,
-    ) -> CompletionResult:
-        ...
+    # SDK Connection-Objekt holen fuer URL/Header-Aufbau
+    conn_id = connection_dict.get("id", "")
+    try:
+        sdk_conn = client.get_connection(conn_id)
+    except Exception:
+        # Fallback: erste verfuegbare Connection
+        sdk_conn = client.match()
 
+    chat_url = client.build_chat_url(sdk_conn)
+    headers = client.build_headers(sdk_conn)
 
-class OpenAICompatibleProvider(LLMProvider):
-    """Provider für OpenAI, Ollama, vLLM, Groq, Mistral etc."""
+    provider_type = sdk_conn.provider_type.lower()
+    model_name = sdk_conn.model_name
 
-    async def complete(
-        self,
-        messages: list[dict],
-        model: str,
-        system_prompt: Optional[str] = None,
-        temperature: float = 0.7,
-        max_tokens: int = 4096,
-    ) -> CompletionResult:
-        # Endpoint kann bereits /v1 enthalten — nicht doppelt anhängen
-        base = self.endpoint_url.rstrip("/")
-        if base.endswith("/v1"):
-            url = f"{base}/chat/completions"
-        else:
-            url = f"{base}/v1/chat/completions"
+    logger.info(f"LLM-Anfrage an {chat_url} (Modell: {model_name}, Provider: {provider_type})")
 
-        # System-Prompt als erste Nachricht einfügen
-        full_messages = []
-        if system_prompt:
-            full_messages.append({"role": "system", "content": system_prompt})
-        full_messages.extend(messages)
+    if provider_type in ANTHROPIC_PROVIDERS:
+        payload = _build_anthropic_payload(messages, model_name, system_prompt, temperature, max_tokens)
+    else:
+        payload = _build_openai_payload(messages, model_name, system_prompt, temperature, max_tokens)
 
-        headers = {"Content-Type": "application/json"}
-        if self.api_key:
-            headers["Authorization"] = f"Bearer {self.api_key}"
+    async with httpx.AsyncClient(timeout=120, verify=False) as http:
+        resp = await http.post(chat_url, json=payload, headers=headers)
+        resp.raise_for_status()
+        data = resp.json()
 
-        payload = {
-            "model": model,
-            "messages": full_messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "stream": False,
-        }
-
-        logger.info(f"LLM-Anfrage an {url} (Modell: {model})")
-
-        async with httpx.AsyncClient(timeout=120) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-
-        choice = data["choices"][0]
-        usage = data.get("usage", {})
-
-        return CompletionResult(
-            content=choice["message"]["content"],
-            tokens_in=usage.get("prompt_tokens", 0),
-            tokens_out=usage.get("completion_tokens", 0),
-            model=model,
-            provider=self.provider_type,
-        )
+    if provider_type in ANTHROPIC_PROVIDERS:
+        return _parse_anthropic_response(data, model_name, provider_type)
+    else:
+        return _parse_openai_response(data, model_name, provider_type)
 
 
-class AnthropicProvider(LLMProvider):
-    """Provider für Anthropic Claude."""
-
-    async def complete(
-        self,
-        messages: list[dict],
-        model: str,
-        system_prompt: Optional[str] = None,
-        temperature: float = 0.7,
-        max_tokens: int = 4096,
-    ) -> CompletionResult:
-        url = f"{self.endpoint_url}/v1/messages"
-
-        headers = {
-            "Content-Type": "application/json",
-            "x-api-key": self.api_key,
-            "anthropic-version": "2023-06-01",
-        }
-
-        # Anthropic: System-Prompt als separates Feld
-        # Messages müssen role "user" / "assistant" haben
-        anthropic_messages = []
-        for msg in messages:
-            role = msg["role"]
-            if role == "system":
-                continue  # wird über system-Feld gehandelt
-            anthropic_messages.append({"role": role, "content": msg["content"]})
-
-        payload = {
-            "model": model,
-            "messages": anthropic_messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-        }
-        if system_prompt:
-            payload["system"] = system_prompt
-
-        logger.info(f"LLM-Anfrage an Anthropic (Modell: {model})")
-
-        async with httpx.AsyncClient(timeout=120) as client:
-            resp = await client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
-
-        content = ""
-        for block in data.get("content", []):
-            if block.get("type") == "text":
-                content += block["text"]
-
-        usage = data.get("usage", {})
-
-        return CompletionResult(
-            content=content,
-            tokens_in=usage.get("input_tokens", 0),
-            tokens_out=usage.get("output_tokens", 0),
-            model=model,
-            provider="anthropic",
-        )
+def _build_openai_payload(
+    messages: list[dict], model: str, system_prompt: Optional[str],
+    temperature: float, max_tokens: int,
+) -> dict:
+    full_messages = []
+    if system_prompt:
+        full_messages.append({"role": "system", "content": system_prompt})
+    full_messages.extend(messages)
+    return {
+        "model": model,
+        "messages": full_messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+        "stream": False,
+    }
 
 
+def _build_anthropic_payload(
+    messages: list[dict], model: str, system_prompt: Optional[str],
+    temperature: float, max_tokens: int,
+) -> dict:
+    anthropic_messages = [m for m in messages if m.get("role") != "system"]
+    payload = {
+        "model": model,
+        "messages": anthropic_messages,
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+    if system_prompt:
+        payload["system"] = system_prompt
+    return payload
+
+
+def _parse_openai_response(data: dict, model: str, provider: str) -> CompletionResult:
+    choice = data["choices"][0]
+    usage = data.get("usage", {})
+    return CompletionResult(
+        content=choice["message"]["content"],
+        tokens_in=usage.get("prompt_tokens", 0),
+        tokens_out=usage.get("completion_tokens", 0),
+        model=model,
+        provider=provider,
+    )
+
+
+def _parse_anthropic_response(data: dict, model: str, provider: str) -> CompletionResult:
+    content = ""
+    for block in data.get("content", []):
+        if block.get("type") == "text":
+            content += block["text"]
+    usage = data.get("usage", {})
+    return CompletionResult(
+        content=content,
+        tokens_in=usage.get("input_tokens", 0),
+        tokens_out=usage.get("output_tokens", 0),
+        model=model,
+        provider=provider,
+    )
+
+
+# Legacy-Kompatibilitaet: LLMRouter Klasse (wird in ki_recherche.py nicht mehr gebraucht)
 class LLMRouter:
-    """Factory für LLM-Provider basierend auf Provider-Typ."""
-
-    # Provider-Typen die Anthropic-API nutzen
-    ANTHROPIC_PROVIDERS = {"anthropic", "claude"}
+    ANTHROPIC_PROVIDERS = ANTHROPIC_PROVIDERS
 
     @staticmethod
-    def create_provider(
-        provider_type: str,
-        endpoint_url: str,
-        api_key: str,
-    ) -> LLMProvider:
-        provider_type_lower = provider_type.lower()
-
-        if provider_type_lower in LLMRouter.ANTHROPIC_PROVIDERS:
-            return AnthropicProvider(
-                endpoint_url=endpoint_url or "https://api.anthropic.com",
-                api_key=api_key,
-                provider_type=provider_type_lower,
-            )
-
-        # Alles andere: OpenAI-kompatibel (OpenAI, Ollama, vLLM, Groq, Mistral)
-        return OpenAICompatibleProvider(
-            endpoint_url=endpoint_url,
-            api_key=api_key,
-            provider_type=provider_type_lower,
+    def create_provider(provider_type: str, endpoint_url: str, api_key: str):
+        raise NotImplementedError(
+            "LLMRouter.create_provider() ist veraltet. "
+            "Nutze stattdessen: from app.services.llm_router import complete"
         )

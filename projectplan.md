@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 15.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen
 
 ---
 
@@ -24,6 +24,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 3.1: MCP-Server Auth-Fix & Tool-Verbesserungen | 15.03.2026 | Abgeschlossen |
 | Phase 3.2: RAG-Fixes & MCP-Datumserweiterung | 15.03.2026 | Abgeschlossen |
 | Phase 3.3: RAG-Query-Optimierung & Chat-UI-Verbesserungen | 15.03.2026 | Abgeschlossen |
+| Phase 4.0: SDK-Integration (ams-llm + ams-thoster) | 15.03.2026 | Abgeschlossen |
 
 ---
 
@@ -68,8 +69,8 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 
 **Services:**
 - [x] ConnectionManager (WebSocket-Verbindungsverwaltung)
-- [x] ConnectionsClient (HTTP-Client fuer ams-connections API)
-- [x] LLMRouter (Phase 2 – Provider-Abstraktion fuer LLM-Aufrufe)
+- [x] ConnectionsClient (SDK-Wrapper via ams-llm SDK – Phase 4.0)
+- [x] LLMRouter / `complete()` (Phase 2/4.0 – SDK-basierte LLM-Aufrufe)
 
 **Ticket-Statusmaschine:**
 - [x] eingang → in_bearbeitung
@@ -308,6 +309,43 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 
 ---
 
+---
+
+## Phase 4.0 – SDK-Integration (15.03.2026)
+
+### ams-llm SDK Integration
+
+- [x] `backend/ams-llm-sdk/` – Lokale SDK-Kopie aus `github.com/FinPark/ams.Connection`
+- [x] `services/connections_client.py` – komplett ersetzt: `LLMClient` fuer Service Discovery, Connection-Listing und API-Key-Abruf
+  - [x] Singleton `get_client()` mit `LLMClient(tool_name="ams-supportdesk")`
+  - [x] `_conn_to_dict()` fuer API-Kompatibilitaet des bestehenden dict-basierten Interfaces
+  - [x] `get_connections()` / `get_connection()` – weiterhin async, intern aber synchron ueber SDK
+- [x] `services/llm_router.py` – komplett ersetzt (von 184 Zeilen / 3 Klassen auf 90 Zeilen / 1 async Funktion)
+  - [x] `complete()` – SDK-basierter URL/Header-Aufbau via `build_chat_url()` + `build_headers()`
+  - [x] Eigener httpx-Call fuer System-Prompt + Message-History (SDK-Stream nicht ausreichend)
+  - [x] Unterstuetzt OpenAI-kompatible Provider und Anthropic Claude (per `provider_type`)
+  - [x] `LLMRouter` Legacy-Klasse bleibt als Stub mit `NotImplementedError` fuer Rueckwaertskompatibilitaet
+- [x] `routers/ki_recherche.py` – LLM-Aufruf von 12 Zeilen auf 6 Zeilen vereinfacht (nutzt `complete()`)
+- [x] `config.py` – `openai_api_key`, `anthropic_api_key`, `groq_api_key` entfernt; Kommentar erklaert SDK-Verwaltung
+
+### ams-thoster SDK Integration
+
+- [x] `backend/ams-thoster-sdk/` – Lokale SDK-Kopie aus `github.com/FinPark/ams.THoster`
+- [x] `main.py` – THoster-Integration vollstaendig auf SDK umgestellt
+  - [x] `_register_at_thoster()` von 40 Zeilen manuellem httpx-Code auf 10 Zeilen `ThosterClient.register()`
+  - [x] Manuelle `/registered` und `/api/health` Endpoints durch `thoster_routes()` ersetzt
+  - [x] `import httpx` aus `main.py` entfernt (kein manueller HTTP-Code mehr)
+  - [x] Doppelter Router-Include (`app.include_router` + `prefix="/api"`) fuer Traefik-Kompatibilitaet
+
+### Infrastruktur
+
+- [x] `backend/Dockerfile` – `git` via apt-get installiert (wird fuer pip-GitHub-Installs benoetigt)
+- [x] `backend/Dockerfile` – SDK-Verzeichnisse via `COPY` und `uv pip install ./ams-*-sdk` installiert
+- [x] `docker-compose.yml` – `AMS_CONNECTIONS_URL` Umgebungsvariable fuer Docker-internes Routing ergaenzt
+- [x] `pyproject.toml` – unveraendert (SDKs werden separat im Dockerfile installiert)
+
+---
+
 ## Phase 4 – Geplant (naechste Schritte)
 
 ### KI-Integration vertiefen
@@ -496,6 +534,9 @@ block-beta
 | Traefik als Reverse Proxy | THoster-Standard, einfache Label-basierte Konfiguration |
 | Kuerzel-basierter Login | Schneller Workspace-Zugang fuer Supporter ohne Passwort-Friction |
 | #003459 Primaerfarbe | THoster/ams.projects Unternehmensfarbe |
+| ams-llm SDK statt manuellem HTTP | Zentrales Connection-Management, API-Key-Verwaltung und URL-Aufbau ueber SDK |
+| ams-thoster SDK statt manuellem HTTP | THoster-Registrierung und Pflicht-Endpoints in einer Zeile statt 40 Zeilen Code |
+| Lokale SDK-Kopien im Repo | Reproduzierbarer Docker-Build ohne externe Git-Abhaengigkeiten zur Build-Zeit |
 
 ---
 

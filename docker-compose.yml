@@ -24,6 +24,7 @@ services:
       - "traefik.http.services.amssd-api.loadbalancer.server.port=8000"
     environment:
       SERVER_DOMAIN: ${SERVER_DOMAIN:-localhost}
+      AMS_CONNECTIONS_URL: http://amsconnections-frontend-1:80
     env_file: .env
     networks:
       - default

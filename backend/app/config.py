@@ -21,10 +21,8 @@ class Settings(BaseSettings):
     # Internes Service-Token (MCP-Server → Backend)
     internal_api_key: str = ""
 
-    # API-Keys (optional, wenn nicht über ams-connections verwaltet)
-    openai_api_key: str = ""
-    anthropic_api_key: str = ""
-    groq_api_key: str = ""
+    # API-Keys werden ueber ams-connections / ams-llm SDK verwaltet
+    # (keine lokalen Keys mehr noetig)
 
     @property
     def database_url(self) -> str:

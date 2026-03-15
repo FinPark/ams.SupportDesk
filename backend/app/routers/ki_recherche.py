@@ -21,7 +21,7 @@ from app.models.ki_nachricht import KINachricht
 from app.models.app_setting import AppSetting
 from app.services.connection_manager import manager
 from app.services.connections_client import get_connection, get_connections
-from app.services.llm_router import LLMRouter, CompletionResult
+from app.services.llm_router import complete as llm_complete, CompletionResult
 
 logger = logging.getLogger(__name__)
 
@@ -360,17 +360,11 @@ async def send_nachricht(
     # Neue Supporter-Nachricht hinzufügen
     existing_messages.append({"role": "user", "content": inhalt})
 
-    # 6. LLM aufrufen
-    provider_type = connection.get("provider_type", connection.get("type", "openai"))
-    endpoint_url = connection.get("endpoint_url", connection.get("endpoint", ""))
-    api_key = connection.get("api_key", connection.get("key", ""))
-    model_name = connection.get("model_name", connection.get("model", connection.get("name", "unknown")))
-
+    # 6. LLM aufrufen (via ams-llm SDK)
     try:
-        provider = LLMRouter.create_provider(provider_type, endpoint_url, api_key)
-        result = await provider.complete(
+        result = await llm_complete(
+            connection_dict=connection,
             messages=existing_messages,
-            model=model_name,
             system_prompt=system_prompt,
         )
         ki_content = result.content
@@ -378,6 +372,8 @@ async def send_nachricht(
         used_model = result.model
     except Exception as e:
         logger.error(f"LLM-Aufruf fehlgeschlagen: {e}")
+        model_name = connection.get("model_name", "unknown")
+        provider_type = connection.get("provider_type", "unknown")
         ki_content = (
             f"**Fehler bei der KI-Anfrage:**\n\n"
             f"`{type(e).__name__}: {e}`\n\n"

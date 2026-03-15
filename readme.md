@@ -128,6 +128,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | `/workspace/:id`               | Support-Workspace (Split-Layout)|
 | `/portal`                      | Kunden-Portal                   |
 | `/admin`                       | Admin-Bereich                   |
+| `/statistik`                   | Statistik & Analytics           |
 | `/api/...`                     | Backend REST-API                |
 | `/api/ws/...`                  | WebSocket-Endpunkte             |
 | `/mcp/...`                     | MCP-Server (SSE/Streamable HTTP)|
@@ -156,7 +157,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | MCPServerRegistry    | Registrierte MCP-Server                   |
 | AppSetting           | Anwendungseinstellungen (Key-Value)       |
 
-### API-Router (12)
+### API-Router (13)
 
 | Router          | Prefix                   | Beschreibung                             |
 |-----------------|--------------------------|------------------------------------------|
@@ -170,6 +171,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | eingangskorb    | `/api/eingangskorb`      | Eingangskorb-Abfrage                     |
 | connections     | `/api/connections`       | ams-connections Integration              |
 | ki_recherche    | `/api/v1/ki-recherche`   | KI-Recherche-Chat (Verlauf, Nachrichten, LLM) |
+| statistik       | `/api/v1/statistik`      | Statistik & Analytics (6 Tabs)           |
 | ws              | `/api/ws`                | WebSocket (Ticket-Chat + Eingangskorb)   |
 | admin           | `/api/admin`             | Admin-Verwaltung inkl. Systemprompt      |
 
@@ -188,6 +190,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | `/workspace/:id`  | TicketWorkspace       | Split: KundenChat + KIChat                |
 | `/portal`         | PortalLogin + Chat    | Kunden-Portal                             |
 | `/admin`          | AdminPage             | Tab-basierte Admin-Verwaltung             |
+| `/statistik`      | StatistikPage         | Statistik & Analytics (6 Tabs)            |
 
 ### Admin-Manager-Komponenten
 
@@ -198,6 +201,22 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 - **RAGCollectionManager** – RAG-Collections verwalten; Toggle zum Aktivieren/Deaktivieren pro Collection (analog zu MCP-Server), aktive Collections werden oben sortiert, Aktivierungszustand wird in App-Settings persistiert (`rag_active_collections`)
 - **KISettingsManager** (Phase 2) – KI-spezifische Einstellungen: konfigurierbarer Systemprompt fuer den Recherche-Assistenten
 - **SettingsManager** – Allgemeine App-Einstellungen (ohne KI-Prompt, separater Tab)
+
+### Statistik & Analytics-Komponenten (Phase 3)
+
+- **StatistikPage** – Wrapper mit globaler Filter-Leiste (Zeitraum-Presets, Custom DateRange, Supporter-Filter) und Tab-Navigation
+- **StatistikUebersicht** – KPI-Karten (Gesamttickets, offene Tickets, geloeste Tickets, Ø Loesungszeit) und Trendcharts
+- **StatistikSupporter** – Supporter-Performance: Tickets pro Supporter, Loesungszeiten, Workload-Verteilung
+- **StatistikKunden** – Kunden-Analyse: aktivste Kunden, Ticket-Haeufigkeit, Loesungszeiten pro Kunde
+- **StatistikZeiten** – Zeitanalysen: Tickets nach Wochentag/Stunde, Peak-Zeiten, Bearbeitungsdauern
+- **StatistikQualitaet** – Qualitaetsmetriken: Bewertungs-Auswertung, Kundenzufriedenheit, SLA-Einhaltung
+- **StatistikKI** – KI-Nutzungsstatistiken: Recherche-Haeufigkeit, meistgenutzte Collections, Uebernahme-Rate
+
+### Wiederverwendbare Chart-Komponenten
+
+- **KpiCard** – KPI-Karte mit Wert, Trend-Indikator und optionalem Vergleichszeitraum
+- **TrendChart** – Linien-/Balkendiagramm fuer Zeitreihen (basiert auf recharts)
+- **DistributionChart** – Kreisdiagramm / Balkendiagramm fuer Verteilungen (basiert auf recharts)
 
 ### Shared-Komponenten
 
@@ -255,6 +274,32 @@ Der Supporter-Arbeitsplatz verfuegt ueber einen vollstaendigen KI-Recherche-Chat
 
 ---
 
+## Statistik & Analytics (Phase 3)
+
+Die Statistik-Seite (`/statistik`) bietet umfassende Auswertungen des Support-Betriebs. Alle Endpunkte sind Auth-geschuetzt und unterstuetzen gemeinsame Filter:
+
+**Gemeinsame Query-Parameter:**
+
+| Parameter     | Typ    | Beschreibung                         |
+|---------------|--------|--------------------------------------|
+| `von`         | string | ISO-Datum Beginn (z.B. `2026-01-01`) |
+| `bis`         | string | ISO-Datum Ende                       |
+| `supporter_id`| UUID   | Einschraenkung auf einen Supporter   |
+| `kunde_id`    | UUID   | Einschraenkung auf einen Kunden      |
+
+### Statistik-API-Endpunkte
+
+| Methode | Pfad                          | Beschreibung                                           |
+|---------|-------------------------------|--------------------------------------------------------|
+| GET     | `/api/v1/statistik/uebersicht` | KPI-Uebersicht: Ticket-Volumen, Loesungszeiten, Trends |
+| GET     | `/api/v1/statistik/supporter`  | Supporter-Performance und Workload-Verteilung          |
+| GET     | `/api/v1/statistik/kunden`     | Kunden-Analyse: aktivste Kunden, Loesungszeiten        |
+| GET     | `/api/v1/statistik/zeiten`     | Zeitanalysen: Peak-Zeiten, Tagesverteilung             |
+| GET     | `/api/v1/statistik/qualitaet`  | Qualitaet: Bewertungen, Kundenzufriedenheit            |
+| GET     | `/api/v1/statistik/ki`         | KI-Nutzung: Recherchen, Collections, Uebernahmen       |
+
+---
+
 ## Ticketnummern
 
 Tickets erhalten beim Anlegen eine fortlaufende, lesbare `nummer` (auto-increment, nicht die UUID). Diese wird im Kunden-Portal zum Einloggen verwendet und in allen Listen/Komponenten angezeigt.
@@ -301,7 +346,7 @@ ams.SupportDesk/
 │       ├── database.py      # Async SQLAlchemy Engine
 │       ├── middleware/      # Auth-Middleware
 │       ├── models/          # 13 SQLAlchemy-Modelle
-│       ├── routers/         # 12 API-Router (inkl. ki_recherche)
+│       ├── routers/         # 13 API-Router (inkl. ki_recherche, statistik)
 │       ├── schemas/         # Pydantic-Schemas
 │       └── services/        # ConnectionManager, ConnectionsClient, LLMRouter
 │
@@ -312,7 +357,7 @@ ams.SupportDesk/
 │   └── src/
 │       ├── App.tsx          # Routing
 │       ├── main.tsx
-│       ├── components/      # Admin, Eingangskorb, Portal, Tickets, Workspace
+│       ├── components/      # Admin, Eingangskorb, Portal, Statistik, Tickets, Workspace
 │       ├── hooks/           # useAuth, useTickets, useWebSocket
 │       ├── lib/             # api.ts, types.ts
 │       └── theme/           # Chakra UI Theme (#003459)

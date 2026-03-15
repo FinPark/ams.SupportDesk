@@ -407,6 +407,15 @@ export default function TicketWorkspace({ supporter, onLogout }: Props) {
             size="sm"
             color="white"
             opacity={0.8}
+            onClick={() => navigate("/statistik")}
+          >
+            Statistik
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="white"
+            opacity={0.8}
             onClick={() => navigate("/admin")}
           >
             Admin

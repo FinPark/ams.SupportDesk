@@ -130,6 +130,7 @@ from app.routers.connections import router as connections_router
 from app.routers.ws import router as ws_router
 from app.routers.admin import router as admin_router
 from app.routers.ki_recherche import router as ki_recherche_router
+from app.routers.statistik import router as statistik_router
 
 app.include_router(auth_router)
 app.include_router(kunden_router)
@@ -143,3 +144,4 @@ app.include_router(connections_router)
 app.include_router(ws_router)
 app.include_router(admin_router)
 app.include_router(ki_recherche_router)
+app.include_router(statistik_router)

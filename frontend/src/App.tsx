@@ -10,6 +10,7 @@ import Eingangskorb from "@/components/eingangskorb/Eingangskorb"
 import TicketList from "@/components/tickets/TicketList"
 import TicketCreate from "@/components/tickets/TicketCreate"
 import TicketWorkspace from "@/components/workspace/TicketWorkspace"
+import StatistikPage from "@/components/statistik/StatistikPage"
 
 function PortalPage() {
   const [kundeId, setKundeId] = useState("")
@@ -115,6 +116,15 @@ function TicketOverview() {
             size="sm"
             color="white"
             opacity={0.8}
+            onClick={() => navigate("/statistik")}
+          >
+            Statistik
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="white"
+            opacity={0.8}
             onClick={() => navigate("/admin")}
           >
             Admin
@@ -207,12 +217,31 @@ function AdminPageWrapper() {
   return <AdminPage />
 }
 
+function StatistikPageWrapper() {
+  const { supporter, loading, login } = useAuth()
+
+  if (loading) {
+    return (
+      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+        <Text color="gray.400">Laden...</Text>
+      </Box>
+    )
+  }
+
+  if (!supporter) {
+    return <SupporterLogin onLogin={login} />
+  }
+
+  return <StatistikPage />
+}
+
 export default function App() {
   return (
     <Routes>
       <Route path="/portal/*" element={<PortalPage />} />
       <Route path="/workspace/:ticketId" element={<WorkspacePage />} />
       <Route path="/admin/*" element={<AdminPageWrapper />} />
+      <Route path="/statistik" element={<StatistikPageWrapper />} />
       <Route path="/*" element={<TicketOverview />} />
     </Routes>
   )

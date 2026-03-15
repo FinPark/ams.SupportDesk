@@ -1,8 +1,8 @@
 # ams.SupportDesk – Projektplan
 
 **Erstellt:** 14.03.2026
-**Stand:** 14.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen
+**Stand:** 15.03.2026
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen
 
 ---
 
@@ -20,7 +20,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 1.1: Bugfixes & UI-Verbesserungen | 14.03.2026 | Abgeschlossen |
 | Phase 1.2: RAG-Collections Toggle | 14.03.2026 | Abgeschlossen |
 | Phase 2: KI-Integration (LLM-Router, Recherche-Chat, Ticketnummern) | 14.03.2026 | Abgeschlossen |
-| Phase 3: Reporting & Analytics | offen | Geplant |
+| Phase 3: Statistik & Analytics | 15.03.2026 | Abgeschlossen |
 
 ---
 
@@ -236,7 +236,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 
 ---
 
-## Phase 2.1 – Offen (naechste Schritte)
+## Phase 4 – Geplant (naechste Schritte)
 
 ### KI-Integration vertiefen
 
@@ -244,6 +244,13 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [ ] KI-gestuetzte Ticket-Kategorisierung beim Eingang
 - [ ] Automatische Template-Vorschlaege basierend auf Ticket-Inhalt
 - [ ] Sentiment-Analyse fuer Kundennachrichten
+
+### Statistik & Analytics erweitern
+
+- [ ] Export-Funktionen (CSV, PDF)
+- [ ] Dashboard-Widgets konfigurierbar
+- [ ] E-Mail-Reports (geplante Versendung)
+- [ ] Kundenfilter in allen Statistik-Tabs
 
 ### Supporter-Funktionen
 
@@ -262,15 +269,47 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 
 ---
 
-## Phase 3 – Geplant
+## Phase 3 – Abgeschlossen (15.03.2026)
 
-### Reporting & Analytics
+### Statistik & Analytics
 
-- [ ] Ticket-Statistiken (Volumen, Loesungszeit, Kategorien)
-- [ ] Supporter-Performance-Dashboard
-- [ ] Bewertungs-Auswertung
-- [ ] KI-Nutzungsstatistiken
-- [ ] Export-Funktionen (CSV, PDF)
+#### Backend
+
+- [x] `routers/statistik.py` – Neuer Router mit 6 Endpunkten unter `/api/v1/statistik/`
+  - [x] `GET /uebersicht` – KPI-Uebersicht: Ticket-Volumen, Status-Verteilung, Loesungszeiten, Tagestrend
+  - [x] `GET /supporter` – Supporter-Performance: Tickets pro Supporter, Ø Loesungszeit, Workload-Verteilung
+  - [x] `GET /kunden` – Kunden-Analyse: aktivste Kunden, Ticket-Frequenz, Loesungszeiten
+  - [x] `GET /zeiten` – Zeitanalysen: Tickets nach Wochentag/Stunde, Peak-Zeiten, Bearbeitungsdauern
+  - [x] `GET /qualitaet` – Qualitaetsmetriken: Bewertungs-Auswertung, Kundenzufriedenheit, SLA
+  - [x] `GET /ki` – KI-Nutzungsstatistiken: Recherche-Haeufigkeit, Collections, Uebernahme-Rate
+- [x] Alle Endpunkte Auth-geschuetzt (`get_current_supporter` Dependency)
+- [x] Gemeinsame Filter-Parameter: `von`, `bis`, `supporter_id`, `kunde_id`
+- [x] `main.py` – Statistik-Router registriert
+
+#### Frontend
+
+- [x] Route `/statistik` in `App.tsx` eingetragen
+- [x] `StatistikPage.tsx` – Wrapper mit globaler Filter-Leiste
+  - [x] Zeitraum-Presets (Heute, 7 Tage, 30 Tage, 90 Tage, dieses Jahr)
+  - [x] Custom DateRange-Picker
+  - [x] Supporter-Filter (Dropdown)
+  - [x] Tab-Navigation (6 Tabs)
+- [x] Tab-Komponenten (6 Stueck):
+  - [x] `StatistikUebersicht.tsx` – KPI-Karten und Trendcharts
+  - [x] `StatistikSupporter.tsx` – Supporter-Performance-Tabelle und Charts
+  - [x] `StatistikKunden.tsx` – Kunden-Rangliste und Analyse
+  - [x] `StatistikZeiten.tsx` – Heatmap und Zeitverteilungs-Charts
+  - [x] `StatistikQualitaet.tsx` – Bewertungs-Auswertung und Zufriedenheits-Charts
+  - [x] `StatistikKI.tsx` – KI-Nutzungsstatistiken und Collection-Analyse
+- [x] Chart-Komponenten (3 wiederverwendbare):
+  - [x] `charts/KpiCard.tsx` – KPI-Karte mit Trend-Indikator
+  - [x] `charts/TrendChart.tsx` – Linien-/Balkendiagramm fuer Zeitreihen
+  - [x] `charts/DistributionChart.tsx` – Kreisdiagramm / Balkendiagramm fuer Verteilungen
+- [x] `recharts` als Chart-Library installiert
+- [x] "Statistik"-Button in alle 3 Navigationsleisten eingefuegt:
+  - [x] `App.tsx` (TicketOverview)
+  - [x] `TicketWorkspace.tsx`
+  - [x] `AdminPage.tsx`
 
 ### Technische Verbesserungen
 

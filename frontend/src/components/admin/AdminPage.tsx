@@ -93,6 +93,15 @@ function AdminPageContent() {
           >
             Kunden-Portal
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="white"
+            opacity={0.8}
+            onClick={() => navigate("/statistik")}
+          >
+            Statistik
+          </Button>
         </HStack>
         <HStack gap={3}>
           <Text fontSize="sm">{supporter.kuerzel}</Text>

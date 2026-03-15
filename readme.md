@@ -37,17 +37,14 @@ ams.SupportDesk ist ein mehrschichtiges Support-System mit folgenden Kernfunktio
 
 ## Architektur
 
-```
-ams-supportdesk.{SERVER_DOMAIN}
-        |
-   [Traefik Reverse Proxy]
-        |
-   -----+------+----------+
-   |           |          |
-[Frontend]  [Backend]  [MCP-Server]
- React 18    FastAPI     FastMCP 2.x
- Nginx        |              |
-           [PostgreSQL 16] [Redis 7]
+```mermaid
+graph TD
+    A["ams-supportdesk.{SERVER_DOMAIN}"] --> B[Traefik Reverse Proxy]
+    B --> C["Frontend<br/>React 18 / Nginx"]
+    B --> D["Backend<br/>FastAPI"]
+    B --> E["MCP-Server<br/>FastMCP 2.x"]
+    D --> F[(PostgreSQL 16)]
+    D --> G[(Redis 7)]
 ```
 
 **5 Docker-Services:**
@@ -308,22 +305,15 @@ Tickets erhalten beim Anlegen eine fortlaufende, lesbare `nummer` (auto-incremen
 
 ## Ticket-Statusmaschine
 
-```
-eingang
-   |
-   v
-in_bearbeitung
-   |
-   +---------> wartet (auf Kunden-Antwort)
-   |              |
-   v              v
-geloest <---------+
-   |
-   v
-bewertung
-   |
-   v
-geschlossen
+```mermaid
+stateDiagram-v2
+    eingang --> in_bearbeitung
+    in_bearbeitung --> wartet : auf Kunden-Antwort
+    in_bearbeitung --> geloest
+    wartet --> eingang
+    geloest --> bewertung
+    bewertung --> geschlossen
+    geschlossen --> eingang : Wiedereröffnung
 ```
 
 ---

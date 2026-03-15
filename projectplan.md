@@ -311,6 +311,96 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
   - [x] `TicketWorkspace.tsx`
   - [x] `AdminPage.tsx`
 
+### Dashboard-Layout-Konzept
+
+#### Seitenstruktur
+
+```mermaid
+graph TD
+    S["/statistik"] --> H["Header + Navigation"]
+    S --> T["Tab-Leiste: Übersicht | Supporter | Kunden | Zeiten & SLA | Qualität | KI-Nutzung"]
+    S --> F["Filter-Leiste: Zeitraum-Presets | Custom DateRange | Supporter-Filter"]
+    S --> C["Tab-Content (wechselnd)"]
+```
+
+#### Tab 1: Übersicht
+
+```mermaid
+block-beta
+    columns 5
+    kpi1["Tickets gesamt"]:1
+    kpi2["Offene Tickets"]:1
+    kpi3["Neue heute"]:1
+    kpi4["Gelöst"]:1
+    kpi5["Ø Bewertung"]:1
+    trend["Liniendiagramm: Ticket-Trend (Eingang vs. Geschlossen)"]:5
+    pie1["Pie: Status-Verteilung"]:2
+    space:1
+    pie2["Pie: Prioritäts-Verteilung"]:2
+    tags["Balken: Top 10 Tags"]:5
+```
+
+#### Tab 2: Supporter
+
+```mermaid
+block-beta
+    columns 1
+    tab["Tabelle: Rangliste (Tickets, Bewertung, Ø Bearbeitungszeit, KI-Nutzung, Lösungsrate)"]
+    bar["Balken: Tickets pro Supporter"]
+```
+
+#### Tab 3: Kunden
+
+```mermaid
+block-beta
+    columns 1
+    tab["Tabelle: Top-Kunden (Name, Tickets, Bewertung, Nachrichten)"]
+    bar["Balken: Tickets pro Kunde (Top 20)"]
+    line["Linie: Neue Kunden pro Monat"]
+```
+
+#### Tab 4: Zeiten & SLA
+
+```mermaid
+block-beta
+    columns 4
+    kpi1["Ø Erste Antwort"]:1
+    kpi2["Ø Bearbeitungsdauer"]:1
+    kpi3["Median"]:1
+    kpi4["Ø Session-Dauer"]:1
+    hist["Histogramm: Bearbeitungsdauer-Verteilung"]:4
+    line["Linie: Antwortzeit-Trend"]:4
+    heat["Heatmap: Ticket-Eingang nach Wochentag + Stunde"]:4
+```
+
+#### Tab 5: Qualität
+
+```mermaid
+block-beta
+    columns 3
+    kpi1["Ø Sterne"]:1
+    kpi2["Lösungsrate"]:1
+    kpi3["Bewertungsquote"]:1
+    bar["Balken: Sterne-Verteilung (1-5)"]:3
+    line["Linie: Bewertungs-Trend"]:3
+    list["Liste: Letzte Bewertungs-Kommentare"]:3
+```
+
+#### Tab 6: KI-Nutzung
+
+```mermaid
+block-beta
+    columns 4
+    kpi1["KI-Sessions"]:1
+    kpi2["Übernahmerate"]:1
+    kpi3["Nachr./Recherche"]:1
+    kpi4["KI-Nutzungsrate"]:1
+    pie1["Pie: Provider-Verteilung"]:2
+    pie2["Pie: Modell-Verteilung"]:2
+    line["Linie: KI-Nutzung über Zeit"]:4
+    bar["Balken: KI-Nutzung pro Supporter"]:4
+```
+
 ### Technische Verbesserungen
 
 - [ ] Alembic-Datenbankmigrationen einrichten

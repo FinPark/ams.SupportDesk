@@ -116,6 +116,7 @@ from app.routers.ws import router as ws_router
 from app.routers.admin import router as admin_router
 from app.routers.ki_recherche import router as ki_recherche_router
 from app.routers.statistik import router as statistik_router
+from app.routers.help import router as help_router, router_compat as help_router_compat
 
 app.include_router(auth_router)
 app.include_router(kunden_router)
@@ -130,3 +131,5 @@ app.include_router(ws_router)
 app.include_router(admin_router)
 app.include_router(ki_recherche_router)
 app.include_router(statistik_router)
+app.include_router(help_router)
+app.include_router(help_router_compat)

@@ -11,6 +11,7 @@ import TicketList from "@/components/tickets/TicketList"
 import TicketCreate from "@/components/tickets/TicketCreate"
 import TicketWorkspace from "@/components/workspace/TicketWorkspace"
 import StatistikPage from "@/components/statistik/StatistikPage"
+import HilfePage from "@/components/hilfe/HilfePage"
 
 function PortalPage() {
   const [kundeId, setKundeId] = useState("")
@@ -129,6 +130,15 @@ function TicketOverview() {
           >
             Admin
           </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            color="white"
+            opacity={0.8}
+            onClick={() => navigate("/hilfe")}
+          >
+            Hilfe
+          </Button>
         </HStack>
         <HStack gap={3}>
           <Button
@@ -235,6 +245,24 @@ function StatistikPageWrapper() {
   return <StatistikPage />
 }
 
+function HilfePageWrapper() {
+  const { supporter, loading, login } = useAuth()
+
+  if (loading) {
+    return (
+      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+        <Text color="gray.400">Laden...</Text>
+      </Box>
+    )
+  }
+
+  if (!supporter) {
+    return <SupporterLogin onLogin={login} />
+  }
+
+  return <HilfePage />
+}
+
 export default function App() {
   return (
     <Routes>
@@ -242,6 +270,7 @@ export default function App() {
       <Route path="/workspace/:ticketId" element={<WorkspacePage />} />
       <Route path="/admin/*" element={<AdminPageWrapper />} />
       <Route path="/statistik" element={<StatistikPageWrapper />} />
+      <Route path="/hilfe" element={<HilfePageWrapper />} />
       <Route path="/*" element={<TicketOverview />} />
     </Routes>
   )

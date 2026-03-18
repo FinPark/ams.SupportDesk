@@ -29,6 +29,7 @@ ams.SupportDesk ist ein mehrschichtiges Support-System mit folgenden Kernfunktio
 - **KI-Assistenz**: Echtzeit-Recherche ueber ams-connections / Agent Hub
 - **Eingangskorb**: Live-Updates per WebSocket fuer neue Tickets
 - **Admin-Bereich**: Verwaltung von Templates, Phasen-Texten, Modellen, MCP-Servern und RAG-Collections
+- **Hilfe-Seite**: Integrierte Hilfe-Dokumentation mit KI-Hilfe-Assistent und Support-Ticket-Widget (THoster-Embeds)
 - **MCP-Server**: Tools fuer Claude Code / Agent Hub zur Ticket-Abfrage
 
 **Primaerfarbe**: `#003459` (dunkles Blau)
@@ -128,8 +129,11 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | `/portal`                      | Kunden-Portal                   |
 | `/admin`                       | Admin-Bereich                   |
 | `/statistik`                   | Statistik & Analytics           |
+| `/hilfe`                       | Hilfe-Seite                     |
 | `/api/...`                     | Backend REST-API                |
 | `/api/ws/...`                  | WebSocket-Endpunkte             |
+| `/api/v1/help/content`         | Hilfetext (Markdown, fuer THoster KI-Assistent) |
+| `/api/help/content`            | Hilfetext Kompatibilitaets-Route (THoster)      |
 | `/mcp/...`                     | MCP-Server (SSE/Streamable HTTP)|
 
 ---
@@ -156,23 +160,25 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | MCPServerRegistry    | Registrierte MCP-Server                   |
 | AppSetting           | Anwendungseinstellungen (Key-Value)       |
 
-### API-Router (13)
+### API-Router (15)
 
-| Router          | Prefix                   | Beschreibung                             |
-|-----------------|--------------------------|------------------------------------------|
-| auth            | `/api/auth`              | Supporter-Authentifizierung              |
-| kunden          | `/api/kunden`            | Kundenverwaltung                         |
-| kunden_portal   | `/api/portal`            | Kunden-Portal-Endpunkte                  |
-| tickets         | `/api/tickets`           | Ticket-CRUD und Statusaenderungen        |
-| tags            | `/api/tags`              | Tag-Verwaltung                           |
-| chat_sessions   | `/api/chat-sessions`     | Chat-Session-Verwaltung                  |
-| nachrichten     | `/api/nachrichten`       | Nachrichten-CRUD inkl. Delete            |
-| eingangskorb    | `/api/eingangskorb`      | Eingangskorb-Abfrage                     |
-| connections     | `/api/connections`       | ams-connections Integration              |
-| ki_recherche    | `/api/v1/ki-recherche`   | KI-Recherche-Chat (Verlauf, Nachrichten, LLM) |
-| statistik       | `/api/v1/statistik`      | Statistik & Analytics (6 Tabs)           |
-| ws              | `/api/ws`                | WebSocket (Ticket-Chat + Eingangskorb)   |
-| admin           | `/api/admin`             | Admin-Verwaltung inkl. Systemprompt      |
+| Router           | Prefix                   | Beschreibung                             |
+|------------------|--------------------------|------------------------------------------|
+| auth             | `/api/auth`              | Supporter-Authentifizierung              |
+| kunden           | `/api/kunden`            | Kundenverwaltung                         |
+| kunden_portal    | `/api/portal`            | Kunden-Portal-Endpunkte                  |
+| tickets          | `/api/tickets`           | Ticket-CRUD und Statusaenderungen        |
+| tags             | `/api/tags`              | Tag-Verwaltung                           |
+| chat_sessions    | `/api/chat-sessions`     | Chat-Session-Verwaltung                  |
+| nachrichten      | `/api/nachrichten`       | Nachrichten-CRUD inkl. Delete            |
+| eingangskorb     | `/api/eingangskorb`      | Eingangskorb-Abfrage                     |
+| connections      | `/api/connections`       | ams-connections Integration              |
+| ki_recherche     | `/api/v1/ki-recherche`   | KI-Recherche-Chat (Verlauf, Nachrichten, LLM) |
+| statistik        | `/api/v1/statistik`      | Statistik & Analytics (6 Tabs)           |
+| ws               | `/api/ws`                | WebSocket (Ticket-Chat + Eingangskorb)   |
+| admin            | `/api/admin`             | Admin-Verwaltung inkl. Systemprompt      |
+| help             | `/api/v1/help`           | Hilfe-Content fuer THoster KI-Assistent  |
+| help (compat)    | `/api/help`              | Kompatibilitaets-Route fuer THoster      |
 
 ---
 
@@ -190,6 +196,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 | `/portal`         | PortalLogin + Chat    | Kunden-Portal                             |
 | `/admin`          | AdminPage             | Tab-basierte Admin-Verwaltung             |
 | `/statistik`      | StatistikPage         | Statistik & Analytics (6 Tabs)            |
+| `/hilfe`          | HilfePage             | Hilfe-Seite mit KI-Assistent und Hilfe-Sektionen |
 
 ### Admin-Manager-Komponenten
 
@@ -324,6 +331,33 @@ Die Statistik-Seite (`/statistik`) bietet umfassende Auswertungen des Support-Be
 
 ---
 
+## Hilfe-Seite & Help-API (Phase 4.1)
+
+### Help-API
+
+Das Backend stellt Hilfe-Content als Markdown bereit, den das THoster KI-Hilfe-Widget als Kontext fuer den KI-Assistenten nutzt:
+
+| Methode | Pfad                     | Beschreibung                                      |
+|---------|--------------------------|---------------------------------------------------|
+| GET     | `/api/v1/help/content`   | Hilfetext als Markdown (THoster-Standard)         |
+| GET     | `/api/help/content`      | Kompatibilitaets-Route (THoster erwartet diesen Pfad) |
+
+Beide Endpunkte liefern `tool_name` und `content` (vollstaendige deutsche Hilfe-Dokumentation zu allen Bereichen: Workspace, Tickets, KI-Recherche, Portal, Admin, Statistik, Templates, Tipps).
+
+### HilfePage (Frontend)
+
+Die Hilfe-Seite (`/hilfe`) ist fuer alle angemeldeten Supporter zugaenglich und erreichbar ueber den "Hilfe"-Button in jeder Navigationsleiste (TicketOverview, TicketWorkspace, AdminPage, StatistikPage).
+
+**Aufbau:**
+- Blauer Header mit Navigation (einheitlich mit allen anderen Seiten)
+- Aufklappbarer KI-Hilfe-Assistent (THoster iFrame: `/embed/help?tool=ams-supportdesk`)
+- Aufklappbares Support-Ticket-Widget (THoster iFrame: `/embed/tickets?tool=ams-supportdesk`)
+- 10 aufklappbare Hilfe-Sektionen mit MarkdownRenderer
+- "Alle aufklappen / Alle zuklappen" Steuerung
+- Dynamische `baseDomain`-Berechnung fuer iFrame-URLs (aus aktuellem `window.location`)
+
+---
+
 ## Ticketnummern
 
 Tickets erhalten beim Anlegen eine fortlaufende, lesbare `nummer` (auto-increment, nicht die UUID). Diese wird im Kunden-Portal zum Einloggen verwendet und in allen Listen/Komponenten angezeigt.
@@ -365,7 +399,7 @@ ams.SupportDesk/
 │       ├── database.py      # Async SQLAlchemy Engine
 │       ├── middleware/      # Auth-Middleware
 │       ├── models/          # 13 SQLAlchemy-Modelle
-│       ├── routers/         # 13 API-Router (inkl. ki_recherche, statistik)
+│       ├── routers/         # 15 API-Router (inkl. ki_recherche, statistik, help)
 │       ├── schemas/         # Pydantic-Schemas
 │       └── services/        # ConnectionManager, ConnectionsClient (SDK), LLMRouter (SDK)
 │
@@ -376,7 +410,7 @@ ams.SupportDesk/
 │   └── src/
 │       ├── App.tsx          # Routing
 │       ├── main.tsx
-│       ├── components/      # Admin, Eingangskorb, Portal, Statistik, Tickets, Workspace
+│       ├── components/      # Admin, Eingangskorb, Hilfe, Portal, Statistik, Tickets, Workspace
 │       ├── hooks/           # useAuth, useTickets, useWebSocket
 │       ├── lib/             # api.ts, types.ts
 │       └── theme/           # Chakra UI Theme (#003459)

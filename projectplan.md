@@ -1,8 +1,8 @@
 # ams.SupportDesk – Projektplan
 
 **Erstellt:** 14.03.2026
-**Stand:** 15.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen
+**Stand:** 18.03.2026
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen
 
 ---
 
@@ -25,6 +25,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 3.2: RAG-Fixes & MCP-Datumserweiterung | 15.03.2026 | Abgeschlossen |
 | Phase 3.3: RAG-Query-Optimierung & Chat-UI-Verbesserungen | 15.03.2026 | Abgeschlossen |
 | Phase 4.0: SDK-Integration (ams-llm + ams-thoster) | 15.03.2026 | Abgeschlossen |
+| Phase 4.1: Hilfe-Seite & Help-API | 18.03.2026 | Abgeschlossen |
 
 ---
 
@@ -343,6 +344,36 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] `backend/Dockerfile` – SDK-Verzeichnisse via `COPY` und `uv pip install ./ams-*-sdk` installiert
 - [x] `docker-compose.yml` – `AMS_CONNECTIONS_URL` Umgebungsvariable fuer Docker-internes Routing ergaenzt
 - [x] `pyproject.toml` – unveraendert (SDKs werden separat im Dockerfile installiert)
+
+---
+
+## Phase 4.1 – Hilfe-Seite & Help-API (18.03.2026)
+
+### Backend – Help-Router (`routers/help.py`)
+
+- [x] Neuer Router `help.py` mit zwei Routen:
+  - [x] `GET /api/v1/help/content` – Hilfetext als Markdown (THoster-Standard-Endpunkt)
+  - [x] `GET /api/help/content` – Kompatibilitaets-Route (THoster erwartet `/api/help/content`)
+- [x] `HELP_CONTENT` – vollstaendige deutsche Hilfe-Dokumentation (Workspace, Tickets, KI-Recherche, Portal, Admin, Statistik, Templates, Tipps)
+- [x] Response-Format: `{ tool_name: "ams-supportdesk", content: "<Markdown>" }`
+- [x] `main.py` – `help_router` und `help_router_compat` registriert
+
+### Frontend – HilfePage (`components/hilfe/HilfePage.tsx`)
+
+- [x] Neue Seite unter Route `/hilfe` mit Auth-Guard (`HilfePageWrapper` in `App.tsx`)
+- [x] Blauer Header mit Navigation (einheitliches Layout wie alle anderen Seiten)
+- [x] Aufklappbarer KI-Hilfe-Assistent (THoster iFrame: `/embed/help?tool=ams-supportdesk`)
+- [x] Aufklappbares Support-Ticket-Widget (THoster iFrame: `/embed/tickets?tool=ams-supportdesk`)
+- [x] 10 aufklappbare Hilfe-Sektionen mit MarkdownRenderer
+- [x] "Alle aufklappen / Alle zuklappen" Steuerung
+- [x] Dynamische `baseDomain`-Berechnung fuer iFrame-URLs aus `window.location`
+
+### Frontend – Navigation (Hilfe-Button in allen Seiten)
+
+- [x] `App.tsx` (TicketOverview) – "Hilfe"-Button in Navigationsleiste ergaenzt
+- [x] `TicketWorkspace.tsx` – "Hilfe"-Button in Header ergaenzt
+- [x] `AdminPage.tsx` – "Hilfe"-Button in Header ergaenzt
+- [x] `StatistikPage.tsx` – "Hilfe"-Button in Header ergaenzt
 
 ---
 

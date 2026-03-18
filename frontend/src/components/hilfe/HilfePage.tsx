@@ -614,7 +614,7 @@ function IFrameSektion({
 
       {/* Content */}
       {open && (
-        <Box p={0}>
+        <Box p={2}>
           <iframe
             src={url}
             style={{

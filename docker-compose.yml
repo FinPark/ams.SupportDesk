@@ -1,6 +1,7 @@
 services:
   frontend:
     build: ./frontend
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.amssd-fe.rule=Host(`ams-supportdesk.${SERVER_DOMAIN:-localhost}`)"
@@ -15,6 +16,7 @@ services:
 
   backend:
     build: ./backend
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.amssd-api.rule=Host(`ams-supportdesk.${SERVER_DOMAIN:-localhost}`) && PathPrefix(`/api`)"
@@ -37,6 +39,7 @@ services:
 
   mcp-server:
     build: ./mcp-server
+    restart: unless-stopped
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.amssd-mcp.rule=Host(`ams-supportdesk.${SERVER_DOMAIN:-localhost}`) && PathPrefix(`/mcp`)"
@@ -58,6 +61,7 @@ services:
 
   db:
     image: postgres:16-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-supportdesk}
       POSTGRES_USER: ${DB_USER:-supportdesk}
@@ -77,6 +81,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     volumes:
       - redisdata:/data
     healthcheck:

@@ -1,4 +1,3 @@
-import { Box, Text } from "@chakra-ui/react"
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
@@ -20,8 +19,8 @@ interface Props {
 
 export default function TrendChart({ title, data, xKey, series, height = 300 }: Props) {
   return (
-    <Box bg="white" borderRadius="lg" p={4} borderWidth={1} borderColor="gray.200">
-      <Text fontWeight="bold" mb={3}>{title}</Text>
+    <div className="bg-white rounded-lg p-4 border border-gray-200">
+      <p className="font-bold mb-3">{title}</p>
       <ResponsiveContainer width="100%" height={height}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -42,6 +41,6 @@ export default function TrendChart({ title, data, xKey, series, height = 300 }: 
           ))}
         </LineChart>
       </ResponsiveContainer>
-    </Box>
+    </div>
   )
 }

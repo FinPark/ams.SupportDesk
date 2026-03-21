@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, Button, Heading, HStack, Text, VStack, Input, Badge } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface Template {
@@ -17,19 +16,19 @@ interface Template {
 const KATEGORIE_OPTIONS = [
   { value: "antwort", label: "Antwort-Vorlage" },
   { value: "ki_prompt", label: "KI-Prompt" },
-  { value: "begruessung", label: "Begrüssung" },
+  { value: "begruessung", label: "Begruessung" },
 ]
 
 const KATEGORIE_COLORS: Record<string, string> = {
-  antwort: "blue",
-  ki_prompt: "purple",
-  begruessung: "green",
+  antwort: "bg-blue-100 text-blue-700",
+  ki_prompt: "bg-purple-100 text-purple-700",
+  begruessung: "bg-green-100 text-green-700",
 }
 
 const KATEGORIE_LABELS: Record<string, string> = {
   antwort: "Antwort-Vorlage",
   ki_prompt: "KI-Prompt",
-  begruessung: "Begrüssung",
+  begruessung: "Begruessung",
 }
 
 export default function TemplateManager() {
@@ -139,42 +138,35 @@ export default function TemplateManager() {
   }, {})
 
   const renderForm = () => (
-    <Box bg="white" p={4} borderRadius="md" borderWidth={1} borderColor="gray.200" mb={4}>
-      <Heading size="sm" mb={3}>
+    <div className="bg-white p-4 rounded-md border border-gray-200 mb-4">
+      <h3 className="text-sm font-semibold mb-3">
         {editingId ? "Vorlage bearbeiten" : "Neue Vorlage erstellen"}
-      </Heading>
-      <VStack gap={3} align="stretch">
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={1}>Name</Text>
-          <Input
+      </h3>
+      <div className="flex flex-col gap-3">
+        <div>
+          <label className="text-sm font-medium mb-1 block">Name</label>
+          <input
             value={formName}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)}
+            onChange={(e) => setFormName(e.target.value)}
             placeholder="Vorlagenname"
-            size="sm"
+            className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
-        </Box>
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={1}>Beschreibung</Text>
-          <Input
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-1 block">Beschreibung</label>
+          <input
             value={formBeschreibung}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormBeschreibung(e.target.value)}
+            onChange={(e) => setFormBeschreibung(e.target.value)}
             placeholder="Kurze Beschreibung"
-            size="sm"
+            className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
-        </Box>
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={1}>Kategorie</Text>
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-1 block">Kategorie</label>
           <select
             value={formKategorie}
             onChange={(e) => setFormKategorie(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "6px 12px",
-              border: "1px solid #E2E8F0",
-              borderRadius: "6px",
-              fontSize: "14px",
-              backgroundColor: "white",
-            }}
+            className="w-full border rounded-md px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           >
             {KATEGORIE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -182,167 +174,154 @@ export default function TemplateManager() {
               </option>
             ))}
           </select>
-        </Box>
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={1}>Inhalt</Text>
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-1 block">Inhalt</label>
           <textarea
             value={formInhalt}
             onChange={(e) => setFormInhalt(e.target.value)}
-            placeholder="Vorlagentext (Markdown möglich)"
+            placeholder="Vorlagentext (Markdown moeglich)"
             rows={6}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              border: "1px solid #E2E8F0",
-              borderRadius: "6px",
-              fontSize: "14px",
-              resize: "vertical",
-              backgroundColor: "white",
-            }}
+            className="w-full border rounded-md px-3 py-2 text-sm resize-y bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
-        </Box>
-        <HStack gap={2}>
-          <Button
-            size="sm"
-            colorPalette="blue"
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
             onClick={handleSave}
-            loading={saving}
-            disabled={!formName.trim() || !formInhalt.trim()}
+            disabled={saving || !formName.trim() || !formInhalt.trim()}
           >
-            {editingId ? "Speichern" : "Erstellen"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={cancelEdit}>
+            {saving ? "..." : editingId ? "Speichern" : "Erstellen"}
+          </button>
+          <button
+            className="px-4 py-2 rounded-md text-sm hover:bg-gray-50"
+            onClick={cancelEdit}
+          >
             Abbrechen
-          </Button>
-        </HStack>
-      </VStack>
-    </Box>
+          </button>
+        </div>
+      </div>
+    </div>
   )
 
   if (loading) {
-    return <Text color="gray.400">Vorlagen werden geladen...</Text>
+    return <span className="text-gray-400">Vorlagen werden geladen...</span>
   }
 
   return (
-    <Box maxW="900px" mx="auto">
-      <HStack justify="space-between" mb={4}>
-        <Heading size="md">Vorlagen</Heading>
-        <Button size="sm" colorPalette="blue" onClick={startCreate}>
+    <div className="max-w-[900px] mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Vorlagen</h2>
+        <button
+          className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90"
+          onClick={startCreate}
+        >
           + Neue Vorlage
-        </Button>
-      </HStack>
+        </button>
+      </div>
 
       {showCreate && renderForm()}
 
       {Object.entries(grouped).map(([kategorie, items]) => (
-        <Box key={kategorie} mb={6}>
-          <HStack mb={2}>
-            <Badge colorPalette={KATEGORIE_COLORS[kategorie] || "gray"} size="lg">
+        <div key={kategorie} className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                KATEGORIE_COLORS[kategorie] || "bg-gray-100 text-gray-700"
+              }`}
+            >
               {KATEGORIE_LABELS[kategorie] || kategorie}
-            </Badge>
-            <Text fontSize="sm" color="gray.500">
-              ({items.length})
-            </Text>
-          </HStack>
+            </span>
+            <span className="text-sm text-gray-500">({items.length})</span>
+          </div>
 
-          <VStack gap={2} align="stretch">
+          <div className="flex flex-col gap-2">
             {items.map((t) => (
-              <Box key={t.id}>
+              <div key={t.id}>
                 {editingId === t.id ? (
                   renderForm()
                 ) : (
-                  <Box
-                    bg="white"
-                    p={3}
-                    borderRadius="md"
-                    borderWidth={1}
-                    borderColor="gray.200"
-                    opacity={t.aktiv ? 1 : 0.6}
+                  <div
+                    className={`bg-white p-3 rounded-md border border-gray-200 ${
+                      t.aktiv ? "" : "opacity-60"
+                    }`}
                   >
-                    <HStack justify="space-between" align="start">
-                      <Box flex={1} minW={0}>
-                        <HStack gap={2} mb={1}>
-                          <Text fontWeight="bold" fontSize="sm">
-                            {t.name}
-                          </Text>
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-sm">{t.name}</span>
                           {!t.aktiv && (
-                            <Badge colorPalette="gray" size="sm">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                               Inaktiv
-                            </Badge>
+                            </span>
                           )}
-                          <Text fontSize="xs" color="gray.400">
+                          <span className="text-xs text-gray-400">
                             Verwendet: {t.usage_count}x
-                          </Text>
-                        </HStack>
+                          </span>
+                        </div>
                         {t.beschreibung && (
-                          <Text fontSize="sm" color="gray.600" mb={1}>
+                          <p className="text-sm text-gray-600 mb-1">
                             {t.beschreibung}
-                          </Text>
+                          </p>
                         )}
-                        <Text fontSize="xs" color="gray.400" lineClamp={2}>
+                        <p className="text-xs text-gray-400 line-clamp-2">
                           {t.inhalt}
-                        </Text>
-                      </Box>
-                      <HStack gap={1} flexShrink={0}>
-                        <Button
-                          size="xs"
-                          variant="ghost"
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          className="px-3 py-1 rounded-md text-xs hover:bg-gray-50"
                           onClick={() => handleToggleAktiv(t)}
                         >
                           {t.aktiv ? "Deaktivieren" : "Aktivieren"}
-                        </Button>
-                        <Button
-                          size="xs"
-                          variant="ghost"
+                        </button>
+                        <button
+                          className="px-3 py-1 rounded-md text-xs hover:bg-gray-50"
                           onClick={() => startEdit(t)}
                         >
                           Bearbeiten
-                        </Button>
+                        </button>
                         {deleteConfirmId === t.id ? (
-                          <HStack gap={1}>
-                            <Button
-                              size="xs"
-                              colorPalette="red"
+                          <div className="flex items-center gap-1">
+                            <button
+                              className="bg-red-500 text-white px-3 py-1 rounded-md text-xs hover:bg-red-600"
                               onClick={() => handleDelete(t.id)}
                             >
-                              Ja, löschen
-                            </Button>
-                            <Button
-                              size="xs"
-                              variant="ghost"
+                              Ja, loeschen
+                            </button>
+                            <button
+                              className="px-3 py-1 rounded-md text-xs hover:bg-gray-50"
                               onClick={() => setDeleteConfirmId(null)}
                             >
                               Nein
-                            </Button>
-                          </HStack>
+                            </button>
+                          </div>
                         ) : (
-                          <Button
-                            size="xs"
-                            variant="ghost"
-                            color="red.500"
+                          <button
+                            className="px-3 py-1 rounded-md text-xs text-red-500 hover:bg-gray-50"
                             onClick={() => setDeleteConfirmId(t.id)}
                           >
-                            Löschen
-                          </Button>
+                            Loeschen
+                          </button>
                         )}
-                      </HStack>
-                    </HStack>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </Box>
+              </div>
             ))}
-          </VStack>
-        </Box>
+          </div>
+        </div>
       ))}
 
       {templates.length === 0 && (
-        <Box textAlign="center" py={8}>
-          <Text color="gray.400">Noch keine Vorlagen vorhanden.</Text>
-          <Text fontSize="sm" color="gray.400">
-            Erstelle eine neue Vorlage über den Button oben.
-          </Text>
-        </Box>
+        <div className="text-center py-8">
+          <p className="text-gray-400">Noch keine Vorlagen vorhanden.</p>
+          <p className="text-sm text-gray-400">
+            Erstelle eine neue Vorlage ueber den Button oben.
+          </p>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }

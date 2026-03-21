@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Box, Button, Heading, HStack, Text } from "@chakra-ui/react"
 import { useAuth } from "@/hooks/useAuth"
 import SupporterLogin from "@/components/shared/SupporterLogin"
 import TemplateManager from "./TemplateManager"
@@ -30,9 +29,9 @@ function AdminPageContent() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-gray-400">Laden...</span>
+      </div>
     )
   }
 
@@ -60,94 +59,75 @@ function AdminPageContent() {
   }
 
   return (
-    <Box h="100vh" display="flex" flexDirection="column">
+    <div className="h-screen flex flex-col">
       {/* Header */}
-      <Box
-        bg="blue.500"
-        color="white"
-        px={4}
-        py={2}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HStack gap={4}>
-          <Heading size="md" cursor="pointer" onClick={() => navigate("/")}>
-            ams.SupportDesk
-          </Heading>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
+      <div className="bg-primary text-white px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1
+            className="text-lg font-bold cursor-pointer"
             onClick={() => navigate("/")}
           >
-            ← Tickets
-          </Button>
-          <Box w="1px" h="20px" bg="whiteAlpha.400" />
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+            ams.SupportDesk
+          </h1>
+          <button
+            className="px-4 py-2 rounded-md text-sm text-white hover:bg-white/10"
+            onClick={() => navigate("/")}
+          >
+            &larr; Tickets
+          </button>
+          <div className="w-px h-5 bg-white/40" />
+          <button
+            className="px-4 py-2 rounded-md text-sm text-white opacity-80 hover:bg-white/10"
             onClick={() => window.open("/portal", "_blank")}
           >
             Kunden-Portal
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="px-4 py-2 rounded-md text-sm text-white opacity-80 hover:bg-white/10"
             onClick={() => navigate("/statistik")}
           >
             Statistik
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="px-4 py-2 rounded-md text-sm text-white opacity-80 hover:bg-white/10"
             onClick={() => navigate("/hilfe")}
           >
             Hilfe
-          </Button>
-        </HStack>
-        <HStack gap={3}>
-          <Text fontSize="sm">{supporter.kuerzel}</Text>
-          <Button variant="ghost" size="sm" color="white" onClick={logout}>
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm">{supporter.kuerzel}</span>
+          <button
+            className="px-4 py-2 rounded-md text-sm text-white hover:bg-white/10"
+            onClick={logout}
+          >
             Abmelden
-          </Button>
-        </HStack>
-      </Box>
+          </button>
+        </div>
+      </div>
 
       {/* Tab Bar */}
-      <Box
-        px={4}
-        py={1}
-        bg="white"
-        borderBottomWidth={1}
-        borderColor="gray.200"
-        display="flex"
-        gap={1}
-      >
+      <div className="px-4 py-1 bg-white border-b border-gray-200 flex gap-1">
         {TABS.map((tab) => (
-          <Button
+          <button
             key={tab.key}
-            variant={activeTab === tab.key ? "solid" : "ghost"}
-            colorPalette="blue"
-            size="sm"
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === tab.key
+                ? "bg-primary text-white"
+                : "text-gray-700 hover:bg-gray-50"
+            }`}
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.label}
-          </Button>
+          </button>
         ))}
-      </Box>
+      </div>
 
       {/* Content */}
-      <Box flex={1} overflow="auto" p={4} bg="gray.50">
+      <div className="flex-1 overflow-auto p-4 bg-gray-50">
         {renderContent()}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }
 

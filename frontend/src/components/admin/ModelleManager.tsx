@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, Button, Heading, HStack, Text, Badge, VStack } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface Modell {
@@ -43,7 +42,6 @@ export default function ModelleManager() {
     }
   }
 
-  // Gespeichertes Standard-Modell laden
   useEffect(() => {
     const loadSelected = async () => {
       try {
@@ -64,113 +62,106 @@ export default function ModelleManager() {
   }
 
   if (loading) {
-    return <Text color="gray.400">Modelle werden geladen...</Text>
+    return <span className="text-gray-400">Modelle werden geladen...</span>
   }
 
   return (
-    <Box maxW="1100px" mx="auto">
-      <HStack justify="space-between" mb={4}>
-        <Heading size="md">KI-Modelle</Heading>
-        <Button size="sm" colorPalette="blue" variant="outline" onClick={loadModelle}>
+    <div className="max-w-[1100px] mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">KI-Modelle</h2>
+        <button
+          className="border border-primary text-primary px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/5"
+          onClick={loadModelle}
+        >
           Aktualisieren
-        </Button>
-      </HStack>
+        </button>
+      </div>
 
       {modelle.length === 0 ? (
-        <Box textAlign="center" py={8}>
-          <Text color="gray.400" mb={2}>Keine Modelle verfügbar.</Text>
-          <Text fontSize="sm" color="gray.400">
+        <div className="text-center py-8">
+          <p className="text-gray-400 mb-2">Keine Modelle verfuegbar.</p>
+          <p className="text-sm text-gray-400">
             Modelle werden von ams-connections bereitgestellt. Stelle sicher, dass der Dienst erreichbar ist.
-          </Text>
-        </Box>
+          </p>
+        </div>
       ) : (
         <>
-          <Text fontSize="sm" color="gray.500" mb={4}>
-            {modelle.length} Modell{modelle.length !== 1 ? "e" : ""} verfügbar. Klicke auf ein Modell, um es als Standard für die KI-Recherche zu setzen.
-          </Text>
-          <Box
-            display="grid"
-            gridTemplateColumns="repeat(auto-fill, minmax(340px, 1fr))"
-            gap={4}
-          >
+          <p className="text-sm text-gray-500 mb-4">
+            {modelle.length} Modell{modelle.length !== 1 ? "e" : ""} verfuegbar. Klicke auf ein Modell, um es als Standard fuer die KI-Recherche zu setzen.
+          </p>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-4">
             {modelle.map((m) => {
               const isInternal = m.security_level === "internal"
               const isSelected = m.id === selectedId
               const caps = Object.entries(m.capabilities || {}).filter(([, v]) => v).map(([k]) => k)
 
               return (
-                <Box
+                <div
                   key={m.id}
-                  bg="white"
-                  p={4}
-                  borderRadius="md"
-                  borderWidth={isSelected ? 2 : 1}
-                  borderColor={isSelected ? "blue.400" : "gray.200"}
-                  borderLeftWidth={4}
-                  borderLeftColor={isInternal ? "green.400" : "orange.400"}
-                  cursor="pointer"
+                  className={`bg-white p-4 rounded-md cursor-pointer transition-all duration-150 relative hover:shadow-md ${
+                    isSelected
+                      ? "border-2 border-blue-400 hover:border-blue-500"
+                      : "border border-gray-200 hover:border-blue-200"
+                  }`}
+                  style={{
+                    borderLeftWidth: "4px",
+                    borderLeftColor: isInternal ? "#4ade80" : "#fb923c",
+                  }}
                   onClick={() => handleSelect(m.id)}
-                  _hover={{ shadow: "md", borderColor: isSelected ? "blue.500" : "blue.200" }}
-                  transition="all 0.15s"
-                  position="relative"
                 >
                   {isSelected && (
-                    <Badge
-                      colorPalette="blue"
-                      size="sm"
-                      position="absolute"
-                      top={2}
-                      right={2}
-                    >
+                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 absolute top-2 right-2">
                       Standard
-                    </Badge>
+                    </span>
                   )}
 
-                  <Text fontWeight="bold" fontSize="sm" mb={2}>
-                    {m.name}
-                  </Text>
+                  <p className="font-bold text-sm mb-2">{m.name}</p>
 
-                  <VStack gap={1} align="stretch" mb={2}>
-                    <HStack gap={2}>
-                      <Text fontSize="xs" color="gray.500" w="60px">Provider:</Text>
-                      <Text fontSize="xs">{m.provider_type}</Text>
-                    </HStack>
-                    <HStack gap={2}>
-                      <Text fontSize="xs" color="gray.500" w="60px">Modell:</Text>
-                      <Text fontSize="xs">{m.model_name}</Text>
-                    </HStack>
-                    <HStack gap={2}>
-                      <Text fontSize="xs" color="gray.500" w="60px">Kontext:</Text>
-                      <Text fontSize="xs">{(m.context_window || 0).toLocaleString()} Tokens</Text>
-                    </HStack>
+                  <div className="flex flex-col gap-1 mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500 w-[60px]">Provider:</span>
+                      <span className="text-xs">{m.provider_type}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500 w-[60px]">Modell:</span>
+                      <span className="text-xs">{m.model_name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500 w-[60px]">Kontext:</span>
+                      <span className="text-xs">{(m.context_window || 0).toLocaleString()} Tokens</span>
+                    </div>
                     {m.has_api_key && (
-                      <HStack gap={2}>
-                        <Text fontSize="xs" color="gray.500" w="60px">API-Key:</Text>
-                        <Badge colorPalette="green" size="sm">Konfiguriert</Badge>
-                      </HStack>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500 w-[60px]">API-Key:</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Konfiguriert</span>
+                      </div>
                     )}
-                  </VStack>
+                  </div>
 
                   {m.description && (
-                    <Text fontSize="xs" color="gray.400" mb={2}>{m.description}</Text>
+                    <p className="text-xs text-gray-400 mb-2">{m.description}</p>
                   )}
 
-                  <HStack gap={1} flexWrap="wrap">
-                    <Badge colorPalette={isInternal ? "green" : "orange"} size="sm">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        isInternal ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"
+                      }`}
+                    >
                       {isInternal ? "Intern" : "Cloud"}
-                    </Badge>
+                    </span>
                     {caps.map((cap) => (
-                      <Badge key={cap} colorPalette="blue" size="sm" variant="subtle">
+                      <span key={cap} className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
                         {CAP_LABELS[cap] || cap}
-                      </Badge>
+                      </span>
                     ))}
-                  </HStack>
-                </Box>
+                  </div>
+                </div>
               )
             })}
-          </Box>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   )
 }

@@ -1,5 +1,3 @@
-import { Box, Text } from "@chakra-ui/react"
-
 interface Props {
   label: string
   value: string | number
@@ -8,26 +6,18 @@ interface Props {
 
 export default function KpiCard({ label, value, suffix }: Props) {
   return (
-    <Box
-      bg="white"
-      borderRadius="lg"
-      p={4}
-      borderWidth={1}
-      borderColor="gray.200"
-      minW="180px"
-      flex={1}
-    >
-      <Text fontSize="sm" color="gray.500" mb={1}>
+    <div className="bg-white rounded-lg p-4 border border-gray-200 min-w-[180px] flex-1">
+      <p className="text-sm text-gray-500 mb-1">
         {label}
-      </Text>
-      <Text fontSize="2xl" fontWeight="bold" color="blue.500">
+      </p>
+      <p className="text-2xl font-bold text-primary">
         {value}
         {suffix && (
-          <Text as="span" fontSize="sm" fontWeight="normal" color="gray.500" ml={1}>
+          <span className="text-sm font-normal text-gray-500 ml-1">
             {suffix}
-          </Text>
+          </span>
         )}
-      </Text>
-    </Box>
+      </p>
+    </div>
   )
 }

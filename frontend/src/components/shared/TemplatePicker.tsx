@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Box, HStack, Text, VStack } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface Template {
@@ -31,58 +30,36 @@ export default function TemplatePicker({ visible, filter, filtered, selectedInde
   if (!visible || filtered.length === 0) return null
 
   return (
-    <Box
-      position="absolute"
-      bottom="100%"
-      left={0}
-      right={0}
-      mb={1}
-      bg="white"
-      borderWidth={1}
-      borderColor="gray.200"
-      borderRadius="lg"
-      shadow="lg"
-      maxH="250px"
-      overflowY="auto"
-      zIndex={10}
+    <div
+      className="absolute bottom-full left-0 right-0 mb-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-[250px] overflow-y-auto z-10"
       ref={listRef}
     >
-      <Box px={3} py={1.5} borderBottomWidth={1} borderColor="gray.100">
-        <Text fontSize="xs" color="gray.400" fontWeight="medium">
+      <div className="px-3 py-1.5 border-b border-gray-100">
+        <p className="text-xs text-gray-400 font-medium">
           Vorlagen {filter && `— "${filter}"`}
-        </Text>
-      </Box>
-      <VStack gap={0} align="stretch">
+        </p>
+      </div>
+      <div className="flex flex-col">
         {filtered.map((t, idx) => (
-          <Box
+          <div
             key={t.id}
             data-template-item
-            px={3}
-            py={2}
-            cursor="pointer"
-            bg={idx === selectedIndex ? "blue.50" : "transparent"}
-            _hover={{ bg: "blue.50" }}
+            className={`px-3 py-2 cursor-pointer hover:bg-primary-light transition-colors ${
+              idx === selectedIndex ? "bg-primary-light" : ""
+            } ${idx < filtered.length - 1 ? "border-b border-gray-50" : ""}`}
             onClick={() => onSelect(t.inhalt)}
-            borderBottomWidth={idx < filtered.length - 1 ? 1 : 0}
-            borderColor="gray.50"
           >
-            <HStack justify="space-between">
-              <Text fontSize="sm" fontWeight="medium" color="gray.700">
-                {t.name}
-              </Text>
-              <Text fontSize="xs" color="gray.400">
-                {t.kategorie}
-              </Text>
-            </HStack>
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-medium text-gray-700">{t.name}</p>
+              <p className="text-xs text-gray-400">{t.kategorie}</p>
+            </div>
             {t.beschreibung && (
-              <Text fontSize="xs" color="gray.500" lineClamp={1}>
-                {t.beschreibung}
-              </Text>
+              <p className="text-xs text-gray-500 truncate">{t.beschreibung}</p>
             )}
-          </Box>
+          </div>
         ))}
-      </VStack>
-    </Box>
+      </div>
+    </div>
   )
 }
 

@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import { Box, Button, Heading, HStack, Input, Text } from "@chakra-ui/react"
 import { useAuth } from "@/hooks/useAuth"
 import SupporterLogin from "@/components/shared/SupporterLogin"
 import api from "@/lib/api"
@@ -95,9 +94,9 @@ export default function StatistikPage() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-400">Laden...</p>
+      </div>
     )
   }
 
@@ -123,109 +122,82 @@ export default function StatistikPage() {
   }
 
   return (
-    <Box h="100vh" display="flex" flexDirection="column">
+    <div className="h-screen flex flex-col">
       {/* Header */}
-      <Box
-        bg="blue.500"
-        color="white"
-        px={4}
-        py={2}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HStack gap={4}>
-          <Heading size="md" cursor="pointer" onClick={() => navigate("/")}>
+      <div className="bg-primary text-white px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h1
+            className="text-lg font-bold cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             ams.SupportDesk
-          </Heading>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
+          </h1>
+          <button
+            className="text-white text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/")}
           >
             ← Tickets
-          </Button>
-          <Box w="1px" h="20px" bg="whiteAlpha.400" />
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <div className="w-px h-5 bg-white/40" />
+          <button
+            className="text-white/80 text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => window.open("/portal", "_blank")}
           >
             Kunden-Portal
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-white/80 text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/admin")}
           >
             Admin
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-white/80 text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/hilfe")}
           >
             Hilfe
-          </Button>
-        </HStack>
-        <HStack gap={3}>
-          <Text fontSize="sm">{supporter.kuerzel}</Text>
-          <Button variant="ghost" size="sm" color="white" onClick={logout}>
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm">{supporter.kuerzel}</span>
+          <button
+            className="text-white text-sm hover:bg-white/10 px-2 py-1 rounded"
+            onClick={logout}
+          >
             Abmelden
-          </Button>
-        </HStack>
-      </Box>
+          </button>
+        </div>
+      </div>
 
       {/* Tab Bar */}
-      <Box
-        px={4}
-        py={1}
-        bg="white"
-        borderBottomWidth={1}
-        borderColor="gray.200"
-        display="flex"
-        gap={1}
-      >
+      <div className="px-4 py-1 bg-white border-b border-gray-200 flex gap-1">
         {TABS.map((tab) => (
-          <Button
+          <button
             key={tab.key}
-            variant={activeTab === tab.key ? "solid" : "ghost"}
-            colorPalette="blue"
-            size="sm"
+            className={
+              activeTab === tab.key
+                ? "bg-primary text-white px-3 py-1.5 rounded-md text-sm font-medium"
+                : "text-sm px-3 py-1.5 rounded-md hover:bg-gray-100"
+            }
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.label}
-          </Button>
+          </button>
         ))}
-      </Box>
+      </div>
 
       {/* Filter Bar */}
-      <Box
-        px={4}
-        py={2}
-        bg="white"
-        borderBottomWidth={1}
-        borderColor="gray.200"
-        display="flex"
-        alignItems="center"
-        gap={3}
-        flexWrap="wrap"
-      >
+      <div className="px-4 py-2 bg-white border-b border-gray-200 flex items-center gap-3 flex-wrap">
         {/* Zeitraum Presets */}
-        <HStack gap={1}>
+        <div className="flex items-center gap-1">
           {PRESETS.map((p, i) => (
-            <Button
+            <button
               key={p.label}
-              size="xs"
-              variant={presetIdx === i && !customVon ? "solid" : "outline"}
-              colorPalette="blue"
+              className={
+                presetIdx === i && !customVon
+                  ? "bg-primary text-white px-2 py-1 rounded-md text-xs font-medium"
+                  : "border px-2 py-1 rounded-md text-xs"
+              }
               onClick={() => {
                 setPresetIdx(i)
                 setCustomVon("")
@@ -233,45 +205,37 @@ export default function StatistikPage() {
               }}
             >
               {p.label}
-            </Button>
+            </button>
           ))}
-        </HStack>
+        </div>
 
-        <Box w="1px" h="24px" bg="gray.200" />
+        <div className="w-px h-6 bg-gray-200" />
 
         {/* Custom Date Range */}
-        <HStack gap={1}>
-          <Text fontSize="xs" color="gray.500">Von:</Text>
-          <Input
-            size="xs"
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-gray-500">Von:</span>
+          <input
             type="date"
-            w="130px"
+            className="border rounded-md px-2 py-1 text-xs w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/20"
             value={customVon}
             onChange={(e) => setCustomVon(e.target.value)}
           />
-          <Text fontSize="xs" color="gray.500">Bis:</Text>
-          <Input
-            size="xs"
+          <span className="text-xs text-gray-500">Bis:</span>
+          <input
             type="date"
-            w="130px"
+            className="border rounded-md px-2 py-1 text-xs w-[130px] focus:outline-none focus:ring-2 focus:ring-primary/20"
             value={customBis}
             onChange={(e) => setCustomBis(e.target.value)}
           />
-        </HStack>
+        </div>
 
-        <Box w="1px" h="24px" bg="gray.200" />
+        <div className="w-px h-6 bg-gray-200" />
 
         {/* Supporter Filter */}
-        <HStack gap={1}>
-          <Text fontSize="xs" color="gray.500">Supporter:</Text>
+        <div className="flex items-center gap-1">
+          <span className="text-xs text-gray-500">Supporter:</span>
           <select
-            style={{
-              fontSize: "12px",
-              padding: "2px 8px",
-              border: "1px solid #E2E8F0",
-              borderRadius: "6px",
-              background: "white",
-            }}
+            className="text-xs px-2 py-1 border border-gray-200 rounded-md bg-white"
             value={supporterFilter}
             onChange={(e) => setSupporterFilter(e.target.value)}
           >
@@ -280,13 +244,13 @@ export default function StatistikPage() {
               <option key={s.id} value={s.id}>{s.kuerzel}</option>
             ))}
           </select>
-        </HStack>
-      </Box>
+        </div>
+      </div>
 
       {/* Content */}
-      <Box flex={1} overflow="auto" p={4} bg="gray.50">
+      <div className="flex-1 overflow-auto p-4 bg-gray-50">
         {renderContent()}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

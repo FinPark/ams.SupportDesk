@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, Text } from "@chakra-ui/react"
 import api from "@/lib/api"
 import DistributionChart from "./charts/DistributionChart"
 import TrendChart from "./charts/TrendChart"
@@ -29,7 +28,7 @@ export default function StatistikKunden({ params }: Props) {
   }, [params])
 
   if (loading || !data) {
-    return <Text color="gray.400">Laden...</Text>
+    return <p className="text-gray-400">Laden...</p>
   }
 
   const { top_kunden, neue_kunden_trend } = data as {
@@ -38,42 +37,42 @@ export default function StatistikKunden({ params }: Props) {
   }
 
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-4">
       {/* Top Kunden Tabelle */}
-      <Box bg="white" borderRadius="lg" borderWidth={1} borderColor="gray.200" overflow="auto">
-        <Box px={4} py={2} borderBottomWidth={1} borderColor="gray.100">
-          <Text fontWeight="bold">Top-Kunden nach Ticketvolumen</Text>
-        </Box>
-        <Box as="table" w="100%" fontSize="sm">
-          <Box as="thead" bg="gray.50">
-            <Box as="tr">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-auto">
+        <div className="px-4 py-2 border-b border-gray-100">
+          <p className="font-bold">Top-Kunden nach Ticketvolumen</p>
+        </div>
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
               {["#", "Kunde", "Tickets", "Ø Bewertung", "Ø Nachr./Ticket"].map((h) => (
-                <Box as="th" key={h} px={3} py={2} textAlign="left" fontWeight="semibold" color="gray.600">
+                <th key={h} className="px-3 py-2 text-left font-semibold text-gray-600">
                   {h}
-                </Box>
+                </th>
               ))}
-            </Box>
-          </Box>
-          <Box as="tbody">
+            </tr>
+          </thead>
+          <tbody>
             {top_kunden.map((k, i) => (
-              <Box as="tr" key={k.kunde_id} borderTopWidth={1} borderColor="gray.100">
-                <Box as="td" px={3} py={2} fontWeight="bold" color="gray.400">{i + 1}</Box>
-                <Box as="td" px={3} py={2} fontWeight="medium">{k.name}</Box>
-                <Box as="td" px={3} py={2} fontWeight="bold">{k.tickets}</Box>
-                <Box as="td" px={3} py={2}>{k.avg_bewertung ?? "–"}</Box>
-                <Box as="td" px={3} py={2}>{k.avg_nachrichten_pro_ticket}</Box>
-              </Box>
+              <tr key={k.kunde_id} className="border-t border-gray-100">
+                <td className="px-3 py-2 font-bold text-gray-400">{i + 1}</td>
+                <td className="px-3 py-2 font-medium">{k.name}</td>
+                <td className="px-3 py-2 font-bold">{k.tickets}</td>
+                <td className="px-3 py-2">{k.avg_bewertung ?? "–"}</td>
+                <td className="px-3 py-2">{k.avg_nachrichten_pro_ticket}</td>
+              </tr>
             ))}
             {top_kunden.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: "24px 12px", textAlign: "center", color: "#A0AEC0" }}>
+                <td colSpan={5} className="px-3 py-6 text-center text-gray-400">
                   Keine Daten vorhanden
                 </td>
               </tr>
             )}
-          </Box>
-        </Box>
-      </Box>
+          </tbody>
+        </table>
+      </div>
 
       {/* Tickets pro Kunde Bar Chart */}
       <DistributionChart
@@ -93,6 +92,6 @@ export default function StatistikKunden({ params }: Props) {
         series={[{ dataKey: "anzahl", color: "#003459", name: "Neue Kunden" }]}
         height={250}
       />
-    </Box>
+    </div>
   )
 }

@@ -184,7 +184,7 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 
 ## Frontend
 
-**Technologien:** React 18 | Vite | TypeScript | Chakra UI v3 | Tailwind CSS 3
+**Technologien:** React 18 | Vite | TypeScript | Tailwind CSS v4 | lucide-react
 
 ### Seiten & Komponenten
 
@@ -406,14 +406,14 @@ ams.SupportDesk/
 ├── frontend/
 │   ├── Dockerfile
 │   ├── nginx.conf
-│   ├── package.json         # React 18 + Vite + Chakra UI v3
+│   ├── package.json         # React 18 + Vite + Tailwind CSS v4 + lucide-react
 │   └── src/
 │       ├── App.tsx          # Routing
 │       ├── main.tsx
+│       ├── index.css        # Tailwind v4 (@import "tailwindcss" + @theme, --color-primary: #003459)
 │       ├── components/      # Admin, Eingangskorb, Hilfe, Portal, Statistik, Tickets, Workspace
 │       ├── hooks/           # useAuth, useTickets, useWebSocket
-│       ├── lib/             # api.ts, types.ts
-│       └── theme/           # Chakra UI Theme (#003459)
+│       └── lib/             # api.ts, types.ts
 │
 └── mcp-server/
     ├── Dockerfile

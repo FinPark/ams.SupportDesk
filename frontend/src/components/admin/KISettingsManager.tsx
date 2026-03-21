@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, Button, Heading, HStack, Text, Textarea } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface Setting {
@@ -50,7 +49,7 @@ export default function KISettingsManager() {
   const hasChanged = promptSetting ? editValue !== promptSetting.value : !!editValue
 
   const handleReset = () => {
-    if (window.confirm("Systemprompt wirklich auf den Standard zurücksetzen? Deine Änderungen gehen verloren.")) {
+    if (window.confirm("Systemprompt wirklich auf den Standard zuruecksetzen? Deine Aenderungen gehen verloren.")) {
       setEditValue(defaultPrompt)
     }
   }
@@ -70,68 +69,62 @@ export default function KISettingsManager() {
   }
 
   if (loading) {
-    return <Text color="gray.400">KI-Einstellungen werden geladen...</Text>
+    return <span className="text-gray-400">KI-Einstellungen werden geladen...</span>
   }
 
   return (
-    <Box maxW="900px" mx="auto">
-      <Heading size="md" mb={3}>KI-Antwort Systemprompt</Heading>
-      <Text fontSize="sm" color="gray.500" mb={3}>
+    <div className="max-w-[900px] mx-auto">
+      <h2 className="text-lg font-semibold mb-3">KI-Antwort Systemprompt</h2>
+      <p className="text-sm text-gray-500 mb-3">
         Dieser Prompt wird bei jeder KI-Anfrage als System-Prompt gesendet.
         {!promptSetting && " (Aktuell wird der Standard-Prompt verwendet.)"}
-      </Text>
+      </p>
 
       {/* Platzhalter-Info */}
-      <HStack gap={3} mb={3} flexWrap="wrap">
+      <div className="flex items-center gap-3 mb-3 flex-wrap">
         {PROMPT_PLACEHOLDERS.map((p) => (
-          <Box
+          <div
             key={p.placeholder}
-            px={2}
-            py={1}
-            bg="blue.50"
-            borderRadius="md"
-            fontSize="xs"
+            className="px-2 py-1 bg-blue-50 rounded-md text-xs"
           >
-            <Text as="span" fontFamily="mono" fontWeight="bold" color="blue.600">
+            <span className="font-mono font-bold text-blue-600">
               {p.placeholder}
-            </Text>
-            <Text as="span" color="gray.500" ml={1}>
+            </span>
+            <span className="text-gray-500 ml-1">
               {p.description}
-            </Text>
-          </Box>
+            </span>
+          </div>
         ))}
-      </HStack>
+      </div>
 
-      <Textarea
+      <textarea
         value={displayValue}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditValue(e.target.value)}
+        onChange={(e) => setEditValue(e.target.value)}
         rows={18}
-        fontFamily="mono"
-        fontSize="sm"
-        bg="white"
-        borderWidth={1}
-        borderColor={hasChanged ? "blue.300" : "gray.200"}
-        borderRadius="md"
-        p={4}
+        className={`w-full font-mono text-sm bg-white p-4 rounded-md border focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary ${
+          hasChanged ? "border-blue-300" : "border-gray-200"
+        }`}
       />
 
-      <HStack justify="flex-end" mt={3} gap={2}>
+      <div className="flex items-center justify-end mt-3 gap-2">
         {defaultPrompt && (
-          <Button size="sm" variant="outline" onClick={handleReset}>
-            Auf Standard zurücksetzen
-          </Button>
+          <button
+            className="border px-4 py-2 rounded-md text-sm hover:bg-gray-50"
+            onClick={handleReset}
+          >
+            Auf Standard zuruecksetzen
+          </button>
         )}
         {(hasChanged || !promptSetting) && (
-          <Button
-            size="sm"
-            colorPalette="blue"
+          <button
+            className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
             onClick={handleSave}
-            loading={saving}
+            disabled={saving}
           >
-            Speichern
-          </Button>
+            {saving ? "..." : "Speichern"}
+          </button>
         )}
-      </HStack>
-    </Box>
+      </div>
+    </div>
   )
 }

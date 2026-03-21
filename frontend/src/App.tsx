@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { Routes, Route, useNavigate } from "react-router-dom"
-import { Box, Button, Heading, HStack, Text } from "@chakra-ui/react"
 import { useAuth } from "@/hooks/useAuth"
 import SupporterLogin from "@/components/shared/SupporterLogin"
 import AdminPage from "@/components/admin/AdminPage"
@@ -56,9 +55,9 @@ function TicketOverview() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-gray-400">Laden...</span>
+      </div>
     )
   }
 
@@ -71,123 +70,110 @@ function TicketOverview() {
   }
 
   return (
-    <Box minH="100vh" display="flex" flexDirection="column">
+    <div className="min-h-screen flex flex-col">
       {/* Top Bar */}
-      <Box
-        bg="blue.500"
-        color="white"
-        px={4}
-        py={2}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HStack gap={4}>
-          <Heading size="md" cursor="pointer" onClick={() => setShowCreate(false)}>
+      <div className="bg-primary text-white px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h2
+            className="text-lg font-bold cursor-pointer"
+            onClick={() => setShowCreate(false)}
+          >
             ams.SupportDesk
-          </Heading>
-          <Button
-            variant={view === "list" ? "solid" : "ghost"}
-            size="sm"
-            color="white"
+          </h2>
+          <button
+            className={
+              view === "list"
+                ? "bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90"
+                : "text-white opacity-80 hover:opacity-100 transition-opacity text-sm font-medium px-4 py-2"
+            }
             onClick={() => { setView("list"); setShowCreate(false) }}
           >
             Tickets
-          </Button>
-          <Button
-            variant={view === "eingangskorb" ? "solid" : "ghost"}
-            size="sm"
-            color="white"
+          </button>
+          <button
+            className={
+              view === "eingangskorb"
+                ? "bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90"
+                : "text-white opacity-80 hover:opacity-100 transition-opacity text-sm font-medium px-4 py-2"
+            }
             onClick={() => { setView("eingangskorb"); setShowCreate(false) }}
           >
             Eingangskorb
-          </Button>
-          <Box w="1px" h="20px" bg="whiteAlpha.400" />
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <div className="w-px h-5 bg-white/40" />
+          <button
+            className="text-white opacity-80 hover:opacity-100 transition-opacity text-sm font-medium px-4 py-2"
             onClick={() => window.open("/portal", "_blank")}
           >
             Kunden-Portal
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-white opacity-80 hover:opacity-100 transition-opacity text-sm font-medium px-4 py-2"
             onClick={() => navigate("/statistik")}
           >
             Statistik
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-white opacity-80 hover:opacity-100 transition-opacity text-sm font-medium px-4 py-2"
             onClick={() => navigate("/admin")}
           >
             Admin
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-white opacity-80 hover:opacity-100 transition-opacity text-sm font-medium px-4 py-2"
             onClick={() => navigate("/hilfe")}
           >
             Hilfe
-          </Button>
-        </HStack>
-        <HStack gap={3}>
-          <Button
-            size="sm"
-            variant="outline"
-            color="white"
-            borderColor="whiteAlpha.400"
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            className="text-sm text-white border border-white/40 px-4 py-2 rounded-md hover:bg-white/10 transition-colors"
             onClick={() => setShowCreate(true)}
           >
             + Neues Ticket
-          </Button>
-          <Text fontSize="sm">{supporter.kuerzel}</Text>
-          <Button variant="ghost" size="sm" color="white" onClick={logout}>
+          </button>
+          <span className="text-sm">{supporter.kuerzel}</span>
+          <button
+            className="text-white opacity-80 hover:opacity-100 transition-opacity text-sm font-medium px-4 py-2"
+            onClick={logout}
+          >
             Abmelden
-          </Button>
-        </HStack>
-      </Box>
+          </button>
+        </div>
+      </div>
 
       {/* Content */}
-      <Box flex={1} display="flex" overflow="hidden">
+      <div className="flex-1 flex overflow-hidden">
         {view === "eingangskorb" && !showCreate && (
-          <Box flex={1} p={4} overflowY="auto">
+          <div className="flex-1 p-4 overflow-y-auto">
             <Eingangskorb onTicketOpen={openTicket} />
-          </Box>
+          </div>
         )}
 
         {view === "list" && !showCreate && (
-          <Box w="100%" display="flex">
-            <Box flex={1} bg="white">
+          <div className="w-full flex">
+            <div className="flex-1 bg-white">
               <TicketList
                 supporter={supporter}
                 onTicketSelect={openTicket}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
 
         {showCreate && (
-          <Box flex={1} p={6} display="flex" justifyContent="center">
-            <Box w="full" maxW="600px">
+          <div className="flex-1 p-6 flex justify-center">
+            <div className="w-full max-w-[600px]">
               <TicketCreate
                 onCreated={openTicket}
                 onCancel={() => setShowCreate(false)}
               />
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }
 
@@ -196,9 +182,9 @@ function WorkspacePage() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-gray-400">Laden...</span>
+      </div>
     )
   }
 
@@ -214,9 +200,9 @@ function AdminPageWrapper() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-gray-400">Laden...</span>
+      </div>
     )
   }
 
@@ -232,9 +218,9 @@ function StatistikPageWrapper() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-gray-400">Laden...</span>
+      </div>
     )
   }
 
@@ -250,9 +236,9 @@ function HilfePageWrapper() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-gray-400">Laden...</span>
+      </div>
     )
   }
 

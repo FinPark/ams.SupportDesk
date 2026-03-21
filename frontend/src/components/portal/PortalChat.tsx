@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from "react"
-import { Box, Button, Heading, HStack, Input, Text, VStack } from "@chakra-ui/react"
 import api from "@/lib/api"
 import { Nachricht } from "@/lib/types"
 import { useWebSocket } from "@/hooks/useWebSocket"
@@ -101,62 +100,62 @@ export default function PortalChat({ kundeId, kundeName, ticketId: initialTicket
   }
 
   return (
-    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <Box bg="blue.500" color="white" px={4} py={3}>
-        <HStack justify="space-between">
-          <VStack align="start" gap={0}>
-            <Heading size="md">ams.SupportDesk</Heading>
-            <Text fontSize="sm" opacity={0.8}>
+      <div className="bg-primary text-white px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h3 className="text-lg font-bold">ams.SupportDesk</h3>
+            <span className="text-sm opacity-80">
               {kundeName} {ticketNummer ? `· Ticket #${ticketNummer}` : ticketId ? `· Ticket` : "· Neue Anfrage"}
-            </Text>
-          </VStack>
-          <Button variant="ghost" color="white" size="sm" onClick={onBack}>
+            </span>
+          </div>
+          <button
+            className="text-white hover:bg-white/10 px-3 py-1 rounded-md text-sm"
+            onClick={onBack}
+          >
             Zurück
-          </Button>
-        </HStack>
-      </Box>
+          </button>
+        </div>
+      </div>
 
       {/* Nachrichten */}
-      <Box flex={1} overflowY="auto" px={4} py={4}>
+      <div className="flex-1 overflow-y-auto px-4 py-4">
         {nachrichten.length === 0 && (
-          <Box textAlign="center" py={10}>
-            <Text color="gray.400">
+          <div className="text-center py-10">
+            <p className="text-gray-400">
               {needsTicket
                 ? "Beschreiben Sie Ihr Anliegen..."
                 : "Noch keine Nachrichten"}
-            </Text>
-          </Box>
+            </p>
+          </div>
         )}
         {nachrichten.map((n) => (
           <PortalMessageBubble key={n.id} nachricht={n} />
         ))}
         <div ref={messagesEndRef} />
-      </Box>
+      </div>
 
       {/* Eingabe */}
-      <Box bg="white" borderTopWidth={1} borderColor="gray.200" px={4} py={3}>
+      <div className="bg-white border-t border-gray-200 px-4 py-3">
         <form onSubmit={handleSend}>
-          <HStack>
-            <Input
+          <div className="flex items-center gap-2">
+            <input
+              className="flex-1 border rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
               placeholder={needsTicket ? "Beschreiben Sie Ihr Anliegen..." : "Nachricht schreiben..."}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              size="lg"
-              flex={1}
             />
-            <Button
+            <button
               type="submit"
-              colorPalette="blue"
-              size="lg"
-              loading={sending}
-              disabled={!input.trim()}
+              disabled={sending || !input.trim()}
+              className="bg-primary text-white px-4 py-3 rounded-md text-base font-medium hover:bg-primary/90 disabled:opacity-50"
             >
-              Senden
-            </Button>
-          </HStack>
+              {sending ? "..." : "Senden"}
+            </button>
+          </div>
         </form>
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

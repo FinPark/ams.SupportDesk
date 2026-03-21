@@ -1,8 +1,8 @@
 # ams.SupportDesk – Projektplan
 
 **Erstellt:** 14.03.2026
-**Stand:** 18.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen
+**Stand:** 21.03.2026
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen, Phase 4.2 Frontend-Migration Tailwind CSS v4 abgeschlossen
 
 ---
 
@@ -26,6 +26,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 3.3: RAG-Query-Optimierung & Chat-UI-Verbesserungen | 15.03.2026 | Abgeschlossen |
 | Phase 4.0: SDK-Integration (ams-llm + ams-thoster) | 15.03.2026 | Abgeschlossen |
 | Phase 4.1: Hilfe-Seite & Help-API | 18.03.2026 | Abgeschlossen |
+| Phase 4.2: Frontend-Migration Tailwind CSS v4 | 21.03.2026 | Abgeschlossen |
 
 ---
 
@@ -374,6 +375,93 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] `TicketWorkspace.tsx` – "Hilfe"-Button in Header ergaenzt
 - [x] `AdminPage.tsx` – "Hilfe"-Button in Header ergaenzt
 - [x] `StatistikPage.tsx` – "Hilfe"-Button in Header ergaenzt
+
+---
+
+## Phase 4.2 – Frontend-Migration Chakra UI v3 → Tailwind CSS v4 (21.03.2026)
+
+### Entfernte Abhaengigkeiten
+
+- [x] `@chakra-ui/react` und `@emotion/react` aus `package.json` entfernt
+- [x] `src/components/ui/provider.tsx` (ChakraProvider) geloescht
+- [x] `src/theme/index.ts` (Chakra-Theme-System mit #003459) geloescht
+
+### Neue Abhaengigkeiten
+
+- [x] `tailwindcss` v4 als CSS-basiertes Styling-Framework hinzugefuegt
+- [x] `@tailwindcss/vite` als Vite-Plugin hinzugefuegt
+- [x] `lucide-react` fuer Icons hinzugefuegt
+- [x] `vite.config.ts` – Tailwind-Plugin eingebunden (`tailwindcss()`)
+
+### Konfiguration
+
+- [x] `src/index.css` erstellt mit `@import "tailwindcss"` und `@theme`-Block
+  - [x] `--color-primary: #003459` (dunkles Blau, THoster-Primaerfarbe)
+  - [x] `--color-primary-dark` und `--color-primary-light` als Farbschattierungen
+- [x] `src/main.tsx` – ChakraProvider entfernt, CSS-Import (`./index.css`) hinzugefuegt
+
+### Migrierte Komponenten (37 Dateien)
+
+**Mapping-Muster:**
+- `Box` → `div`, `HStack` → `div.flex.items-center.gap-*`, `VStack` → `div.flex.flex-col.gap-*`
+- `Button` solid → `bg-primary text-white`, ghost → `hover:bg-gray-50`, outline → `border`
+- `Badge` → `span.px-2.py-0.5.rounded-full.text-xs.font-medium`
+- `Input`/`Textarea` → `input.border.rounded-md.px-3.py-2.text-sm.focus:ring-2`
+- `Heading` → `h2.font-bold.text-primary`
+- `Spinner` → `div.animate-spin.rounded-full.border-2`
+
+**App.tsx:**
+- [x] `App.tsx` – Box/Button/Heading/HStack/Text → div/button/h2 + Tailwind-Klassen
+
+**Shared (3):**
+- [x] `shared/SupporterLogin.tsx`
+- [x] `shared/MarkdownRenderer.tsx`
+- [x] `shared/TemplatePicker.tsx`
+
+**Workspace (3):**
+- [x] `workspace/TicketWorkspace.tsx`
+- [x] `workspace/KundenChat.tsx`
+- [x] `workspace/KIChat.tsx`
+
+**Admin (8):**
+- [x] `admin/AdminPage.tsx`
+- [x] `admin/TemplateManager.tsx`
+- [x] `admin/PhasenTexteManager.tsx`
+- [x] `admin/ModelleManager.tsx`
+- [x] `admin/MCPServerManager.tsx`
+- [x] `admin/RAGCollectionManager.tsx`
+- [x] `admin/KISettingsManager.tsx`
+- [x] `admin/SettingsManager.tsx`
+
+**Portal (3):**
+- [x] `portal/PortalLogin.tsx`
+- [x] `portal/PortalChat.tsx`
+- [x] `portal/PortalMessageBubble.tsx`
+
+**Eingangskorb (2):**
+- [x] `eingangskorb/Eingangskorb.tsx`
+- [x] `eingangskorb/EingangskorbItem.tsx`
+
+**Tickets (4):**
+- [x] `tickets/TicketList.tsx`
+- [x] `tickets/TicketDetail.tsx`
+- [x] `tickets/TicketCreate.tsx`
+- [x] `tickets/TagEditor.tsx`
+
+**Statistik (10):**
+- [x] `statistik/StatistikPage.tsx`
+- [x] `statistik/StatistikUebersicht.tsx`
+- [x] `statistik/StatistikSupporter.tsx`
+- [x] `statistik/StatistikKunden.tsx`
+- [x] `statistik/StatistikZeiten.tsx`
+- [x] `statistik/StatistikQualitaet.tsx`
+- [x] `statistik/StatistikKI.tsx`
+- [x] `statistik/charts/KpiCard.tsx`
+- [x] `statistik/charts/TrendChart.tsx`
+- [x] `statistik/charts/DistributionChart.tsx`
+
+**Hilfe (1):**
+- [x] `hilfe/HilfePage.tsx`
 
 ---
 

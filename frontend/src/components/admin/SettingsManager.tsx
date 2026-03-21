@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, Button, Heading, HStack, Text, VStack, Input } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface Setting {
@@ -81,108 +80,99 @@ export default function SettingsManager() {
   const visibleSettings = settings.filter((s) => !HIDDEN_KEYS.has(s.key))
 
   if (loading) {
-    return <Text color="gray.400">Einstellungen werden geladen...</Text>
+    return <span className="text-gray-400">Einstellungen werden geladen...</span>
   }
 
   return (
-    <Box maxW="800px" mx="auto">
-      <HStack justify="space-between" mb={4}>
-        <Heading size="md">Einstellungen</Heading>
-        <Button
-          size="sm"
-          colorPalette="blue"
+    <div className="max-w-[800px] mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Einstellungen</h2>
+        <button
+          className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90"
           onClick={() => setShowAdd(!showAdd)}
         >
           + Neue Einstellung
-        </Button>
-      </HStack>
+        </button>
+      </div>
 
       {showAdd && (
-        <Box bg="white" p={4} borderRadius="md" borderWidth={1} borderColor="gray.200" mb={4}>
-          <Heading size="sm" mb={3}>Neue Einstellung</Heading>
-          <HStack gap={3} align="end">
-            <Box flex={1}>
-              <Text fontSize="sm" fontWeight="medium" mb={1}>Schlüssel</Text>
-              <Input
+        <div className="bg-white p-4 rounded-md border border-gray-200 mb-4">
+          <h3 className="text-sm font-semibold mb-3">Neue Einstellung</h3>
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <label className="text-sm font-medium mb-1 block">Schluessel</label>
+              <input
                 value={newKey}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewKey(e.target.value)}
+                onChange={(e) => setNewKey(e.target.value)}
                 placeholder="einstellung.name"
-                size="sm"
+                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-            </Box>
-            <Box flex={2}>
-              <Text fontSize="sm" fontWeight="medium" mb={1}>Wert</Text>
-              <Input
+            </div>
+            <div className="flex-[2]">
+              <label className="text-sm font-medium mb-1 block">Wert</label>
+              <input
                 value={newValue}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewValue(e.target.value)}
+                onChange={(e) => setNewValue(e.target.value)}
                 placeholder="Wert"
-                size="sm"
+                className="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
-            </Box>
-            <Button
-              size="sm"
-              colorPalette="blue"
+            </div>
+            <button
+              className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
               onClick={handleAdd}
-              loading={addSaving}
-              disabled={!newKey.trim()}
+              disabled={addSaving || !newKey.trim()}
             >
-              Hinzufügen
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>
+              {addSaving ? "..." : "Hinzufuegen"}
+            </button>
+            <button
+              className="px-4 py-2 rounded-md text-sm hover:bg-gray-50"
+              onClick={() => setShowAdd(false)}
+            >
               Abbrechen
-            </Button>
-          </HStack>
-        </Box>
+            </button>
+          </div>
+        </div>
       )}
 
       {visibleSettings.length === 0 ? (
-        <Box textAlign="center" py={8}>
-          <Text color="gray.400" mb={2}>Keine Einstellungen vorhanden.</Text>
-          <Text fontSize="sm" color="gray.400">
-            Füge eine neue Einstellung über den Button oben hinzu.
-          </Text>
-        </Box>
+        <div className="text-center py-8">
+          <p className="text-gray-400 mb-2">Keine Einstellungen vorhanden.</p>
+          <p className="text-sm text-gray-400">
+            Fuege eine neue Einstellung ueber den Button oben hinzu.
+          </p>
+        </div>
       ) : (
-        <VStack gap={2} align="stretch">
+        <div className="flex flex-col gap-2">
           {visibleSettings.map((s) => (
-            <Box
+            <div
               key={s.key}
-              bg="white"
-              p={3}
-              borderRadius="md"
-              borderWidth={1}
-              borderColor="gray.200"
+              className="bg-white p-3 rounded-md border border-gray-200"
             >
-              <HStack gap={3}>
-                <Box minW="200px" flexShrink={0}>
-                  <Text fontSize="sm" fontWeight="bold" fontFamily="mono">
-                    {s.key}
-                  </Text>
-                </Box>
-                <Input
-                  flex={1}
+              <div className="flex items-center gap-3">
+                <div className="min-w-[200px] shrink-0">
+                  <span className="text-sm font-bold font-mono">{s.key}</span>
+                </div>
+                <input
+                  className="flex-1 border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                   value={editState[s.key] ?? ""}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(e) =>
                     setEditState((prev) => ({ ...prev, [s.key]: e.target.value }))
                   }
-                  size="sm"
                 />
                 {hasChanged(s.key) && (
-                  <Button
-                    size="xs"
-                    colorPalette="blue"
+                  <button
+                    className="bg-primary text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-primary/90 disabled:opacity-50 shrink-0"
                     onClick={() => handleSave(s.key)}
-                    loading={savingKey === s.key}
-                    flexShrink={0}
+                    disabled={savingKey === s.key}
                   >
-                    Speichern
-                  </Button>
+                    {savingKey === s.key ? "..." : "Speichern"}
+                  </button>
                 )}
-              </HStack>
-            </Box>
+              </div>
+            </div>
           ))}
-        </VStack>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }

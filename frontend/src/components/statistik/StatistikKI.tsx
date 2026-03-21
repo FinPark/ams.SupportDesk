@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, HStack, Text } from "@chakra-ui/react"
 import api from "@/lib/api"
 import KpiCard from "./charts/KpiCard"
 import TrendChart from "./charts/TrendChart"
@@ -22,23 +21,23 @@ export default function StatistikKI({ params }: Props) {
   }, [params])
 
   if (loading || !data) {
-    return <Text color="gray.400">Laden...</Text>
+    return <p className="text-gray-400">Laden...</p>
   }
 
   const { kpis, provider_verteilung, modell_verteilung, nutzung_trend, nutzung_pro_supporter } = data
 
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-4">
       {/* KPI Cards */}
-      <HStack gap={4} flexWrap="wrap">
+      <div className="flex items-center gap-4 flex-wrap">
         <KpiCard label="KI-Sessions" value={kpis.ki_sessions} />
         <KpiCard label="KI-Nutzungsrate" value={kpis.ki_nutzungsrate} suffix="%" />
         <KpiCard label="Übernahmerate" value={kpis.uebernahmerate} suffix="%" />
         <KpiCard label="Ø Nachr./Recherche" value={kpis.avg_nachrichten_pro_recherche} />
-      </HStack>
+      </div>
 
       {/* Pie Charts */}
-      <HStack gap={4} flexWrap="wrap" alignItems="flex-start">
+      <div className="flex items-start gap-4 flex-wrap">
         <DistributionChart
           title="Provider-Verteilung"
           data={provider_verteilung}
@@ -55,7 +54,7 @@ export default function StatistikKI({ params }: Props) {
           type="pie"
           height={280}
         />
-      </HStack>
+      </div>
 
       {/* KI-Nutzung Trend */}
       <TrendChart
@@ -75,6 +74,6 @@ export default function StatistikKI({ params }: Props) {
         type="bar"
         height={280}
       />
-    </Box>
+    </div>
   )
 }

@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { Box, Button, Heading, Input, Text, VStack } from "@chakra-ui/react"
 
 interface Props {
   onLogin: (kuerzel: string) => Promise<void>
@@ -25,47 +24,37 @@ export default function SupporterLogin({ onLogin }: Props) {
   }
 
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="gray.50"
-    >
-      <Box bg="white" p={8} borderRadius="xl" shadow="lg" w="full" maxW="400px">
-        <VStack gap={6}>
-          <Heading size="lg" color="blue.500">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-[400px]">
+        <div className="flex flex-col gap-6 items-center">
+          <h1 className="text-2xl font-bold text-primary">
             ams.SupportDesk
-          </Heading>
-          <Text color="gray.500" textAlign="center">
+          </h1>
+          <p className="text-gray-500 text-center text-sm">
             Bitte Kürzel eingeben
-          </Text>
-          <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-            <VStack gap={4}>
-              <Input
+          </p>
+          <form onSubmit={handleSubmit} className="w-full">
+            <div className="flex flex-col gap-4">
+              <input
+                className="w-full border rounded-md px-3 py-3 text-lg text-center uppercase focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-shadow"
                 placeholder="Kürzel (z.B. AND)"
                 value={kuerzel}
                 onChange={(e) => setKuerzel(e.target.value)}
-                size="lg"
-                textAlign="center"
-                textTransform="uppercase"
                 maxLength={10}
                 autoFocus
               />
-              {error && <Text color="red.500" fontSize="sm">{error}</Text>}
-              <Button
+              {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+              <button
                 type="submit"
-                colorPalette="blue"
-                size="lg"
-                w="full"
-                loading={loading}
+                className="w-full bg-primary text-white py-3 rounded-md text-base font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                disabled={loading || !kuerzel.trim()}
               >
-                Anmelden
-              </Button>
-            </VStack>
+                {loading ? "Anmelden..." : "Anmelden"}
+              </button>
+            </div>
           </form>
-        </VStack>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

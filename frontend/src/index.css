@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #003459;
+  --color-primary-light: #E6EDF5;
+  --color-primary-dark: #002640;
+  --color-msg-kunde: #F7FAFC;
+  --color-msg-supporter: #E6EDF5;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

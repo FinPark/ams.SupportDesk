@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, HStack, Text } from "@chakra-ui/react"
 import api from "@/lib/api"
 import KpiCard from "./charts/KpiCard"
 import TrendChart from "./charts/TrendChart"
@@ -22,7 +21,7 @@ export default function StatistikUebersicht({ params }: Props) {
   }, [params])
 
   if (loading || !data) {
-    return <Text color="gray.400">Laden...</Text>
+    return <p className="text-gray-400">Laden...</p>
   }
 
   const { kpis, ticket_trend, status_verteilung, prioritaet_verteilung, top_tags } = data
@@ -43,15 +42,15 @@ export default function StatistikUebersicht({ params }: Props) {
   const trendData = Array.from(trendMap.values()).sort((a, b) => a.datum.localeCompare(b.datum))
 
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-4">
       {/* KPI Cards */}
-      <HStack gap={4} flexWrap="wrap">
+      <div className="flex items-center gap-4 flex-wrap">
         <KpiCard label="Tickets gesamt" value={kpis.gesamt} />
         <KpiCard label="Offene Tickets" value={kpis.offene} />
         <KpiCard label="Neue heute" value={kpis.neue_heute} />
         <KpiCard label="Gelöst" value={kpis.geloest} />
         <KpiCard label="Ø Bewertung" value={kpis.avg_bewertung} suffix="/ 5" />
-      </HStack>
+      </div>
 
       {/* Ticket-Trend */}
       <TrendChart
@@ -65,7 +64,7 @@ export default function StatistikUebersicht({ params }: Props) {
       />
 
       {/* Pie Charts */}
-      <HStack gap={4} flexWrap="wrap" alignItems="flex-start">
+      <div className="flex items-start gap-4 flex-wrap">
         <DistributionChart
           title="Status-Verteilung"
           data={status_verteilung}
@@ -82,7 +81,7 @@ export default function StatistikUebersicht({ params }: Props) {
           type="pie"
           height={280}
         />
-      </HStack>
+      </div>
 
       {/* Top Tags */}
       <DistributionChart
@@ -93,6 +92,6 @@ export default function StatistikUebersicht({ params }: Props) {
         type="bar"
         height={280}
       />
-    </Box>
+    </div>
   )
 }

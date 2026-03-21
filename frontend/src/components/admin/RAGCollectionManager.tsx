@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react"
-import { Box, Button, Heading, HStack, Text, Badge } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface RAGCollection {
@@ -29,7 +28,6 @@ export default function RAGCollectionManager() {
       setRagServer(collResp.data.rag_server || "")
       setInfo(collResp.data.message || "")
 
-      // Aktive Collections aus Settings laden
       const setting = settingsResp.data.find((s: any) => s.key === "rag_active_collections")
       if (setting) {
         try {
@@ -46,7 +44,6 @@ export default function RAGCollectionManager() {
 
   useEffect(() => { loadCollections() }, [])
 
-  // Sortierung: aktive oben, dann alphabetisch
   const sortedCollections = useMemo(() => {
     return [...collections].sort((a, b) => {
       const aActive = activeIds.has(a.id || a.name)
@@ -66,14 +63,12 @@ export default function RAGCollectionManager() {
     }
     setActiveIds(newActive)
 
-    // In Settings speichern
     try {
       await api.put("/admin/settings/rag_active_collections", {
         value: JSON.stringify(Array.from(newActive)),
       })
     } catch { /* ignore */ }
 
-    // Nach 2 Sekunden neu sortieren
     setTimeout(() => {
       loadCollections()
     }, 2000)
@@ -82,103 +77,111 @@ export default function RAGCollectionManager() {
   const isActive = (c: RAGCollection) => activeIds.has(c.id || c.name)
 
   if (loading) {
-    return <Text color="gray.400">RAG-Collections werden geladen...</Text>
+    return <span className="text-gray-400">RAG-Collections werden geladen...</span>
   }
 
   return (
-    <Box maxW="1100px" mx="auto">
-      <HStack justify="space-between" mb={4}>
-        <HStack gap={3}>
-          <Heading size="md">RAG-Collections</Heading>
-          {ragServer && <Text fontSize="sm" color="gray.400">via {ragServer}</Text>}
+    <div className="max-w-[1100px] mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold">RAG-Collections</h2>
+          {ragServer && <span className="text-sm text-gray-400">via {ragServer}</span>}
           {activeIds.size > 0 && (
-            <Badge colorPalette="teal" size="sm">{activeIds.size} aktiv</Badge>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100 text-teal-700">
+              {activeIds.size} aktiv
+            </span>
           )}
-        </HStack>
-        <Button size="sm" colorPalette="blue" variant="outline" onClick={loadCollections}>
+        </div>
+        <button
+          className="border border-primary text-primary px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/5"
+          onClick={loadCollections}
+        >
           Aktualisieren
-        </Button>
-      </HStack>
+        </button>
+      </div>
 
       {info && (
-        <Box bg="orange.50" borderWidth={1} borderColor="orange.200" borderRadius="md" p={4} mb={4}>
-          <Text fontSize="sm" color="orange.700">{info}</Text>
-          <Text fontSize="xs" color="orange.500" mt={1}>
-            Tipp: Markiere einen MCP-Server im Tab "MCP-Server" als RAG-Server, damit Collections geladen werden können.
-          </Text>
-        </Box>
+        <div className="bg-orange-50 border border-orange-200 rounded-md p-4 mb-4">
+          <p className="text-sm text-orange-700">{info}</p>
+          <p className="text-xs text-orange-500 mt-1">
+            Tipp: Markiere einen MCP-Server im Tab "MCP-Server" als RAG-Server, damit Collections geladen werden koennen.
+          </p>
+        </div>
       )}
 
       {!info && collections.length === 0 && (
-        <Box textAlign="center" py={8}>
-          <Text color="gray.400" mb={2}>Keine RAG-Collections vorhanden.</Text>
-          <Text fontSize="sm" color="gray.400">
+        <div className="text-center py-8">
+          <p className="text-gray-400 mb-2">Keine RAG-Collections vorhanden.</p>
+          <p className="text-sm text-gray-400">
             Collections werden vom RAG-Server bereitgestellt.
-          </Text>
-        </Box>
+          </p>
+        </div>
       )}
 
       {collections.length > 0 && (
         <>
-          <Text fontSize="sm" color="gray.500" mb={4}>
-            Aktiviere Collections, die für die KI-Recherche im Support genutzt werden sollen.
-          </Text>
-          <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(300px, 1fr))" gap={3}>
+          <p className="text-sm text-gray-500 mb-4">
+            Aktiviere Collections, die fuer die KI-Recherche im Support genutzt werden sollen.
+          </p>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-3">
             {sortedCollections.map((c, i) => {
               const active = isActive(c)
               return (
-                <Box
+                <div
                   key={c.id || i}
-                  bg="white"
-                  p={4}
-                  borderRadius="md"
-                  borderWidth={1}
-                  borderColor={active ? "teal.200" : "gray.200"}
-                  borderLeftWidth={4}
-                  borderLeftColor={active ? "teal.400" : "gray.300"}
-                  opacity={active ? 1 : 0.6}
-                  transition="all 0.3s ease"
+                  className={`bg-white p-4 rounded-md transition-all duration-300 ${
+                    active ? "opacity-100" : "opacity-60"
+                  }`}
+                  style={{
+                    border: `1px solid ${active ? "#99f6e4" : "#e5e7eb"}`,
+                    borderLeftWidth: "4px",
+                    borderLeftColor: active ? "#2dd4bf" : "#d1d5db",
+                  }}
                 >
-                  <HStack justify="space-between" align="start" mb={2}>
-                    <Box flex={1} minW={0}>
-                      <Text fontWeight="bold" fontSize="sm" color={active ? "teal.700" : "gray.600"}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold text-sm ${active ? "text-teal-700" : "text-gray-600"}`}>
                         {c.name}
-                      </Text>
+                      </p>
                       {c.description && (
-                        <Text fontSize="xs" color="gray.500" mt={1}>{c.description}</Text>
+                        <p className="text-xs text-gray-500 mt-1">{c.description}</p>
                       )}
-                    </Box>
-                    <Button
-                      size="xs"
-                      variant={active ? "solid" : "outline"}
-                      colorPalette={active ? "teal" : "gray"}
+                    </div>
+                    <button
+                      className={`px-3 py-1 rounded-md text-xs font-medium min-w-[70px] shrink-0 ${
+                        active
+                          ? "bg-teal-500 text-white hover:bg-teal-600"
+                          : "border border-gray-300 text-gray-500 hover:bg-gray-50"
+                      }`}
                       onClick={() => handleToggle(c)}
-                      minW="70px"
-                      flexShrink={0}
                     >
                       {active ? "Aktiv" : "Inaktiv"}
-                    </Button>
-                  </HStack>
-                  <HStack gap={3}>
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-3">
                     {c.document_count !== undefined && (
-                      <HStack gap={1}>
-                        <Badge colorPalette="blue" size="sm" variant="subtle">{c.document_count}</Badge>
-                        <Text fontSize="xs" color="gray.500">Dokumente</Text>
-                      </HStack>
+                      <div className="flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
+                          {c.document_count}
+                        </span>
+                        <span className="text-xs text-gray-500">Dokumente</span>
+                      </div>
                     )}
                     {c.total_chunks !== undefined && (
-                      <HStack gap={1}>
-                        <Badge colorPalette="purple" size="sm" variant="subtle">{c.total_chunks}</Badge>
-                        <Text fontSize="xs" color="gray.500">Chunks</Text>
-                      </HStack>
+                      <div className="flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600">
+                          {c.total_chunks}
+                        </span>
+                        <span className="text-xs text-gray-500">Chunks</span>
+                      </div>
                     )}
-                  </HStack>
-                </Box>
+                  </div>
+                </div>
               )
             })}
-          </Box>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   )
 }

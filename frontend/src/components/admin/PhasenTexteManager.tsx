@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, Button, Heading, HStack, Text, VStack, Input, Badge } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface PhasenText {
@@ -14,24 +13,22 @@ interface PhasenText {
 }
 
 const PHASE_COLORS: Record<string, string> = {
-  eingang: "yellow",
-  in_bearbeitung: "blue",
-  wartet: "orange",
-  geloest: "green",
-  bewertung: "purple",
-  geschlossen: "gray",
+  eingang: "bg-yellow-100 text-yellow-700",
+  in_bearbeitung: "bg-blue-100 text-blue-700",
+  wartet: "bg-orange-100 text-orange-700",
+  geloest: "bg-green-100 text-green-700",
+  bewertung: "bg-purple-100 text-purple-700",
+  geschlossen: "bg-gray-100 text-gray-700",
 }
 
 const PHASE_LABELS: Record<string, string> = {
   eingang: "Eingang",
   in_bearbeitung: "In Bearbeitung",
   wartet: "Wartet auf Kunde",
-  geloest: "Gelöst",
+  geloest: "Geloest",
   bewertung: "Bewertung",
   geschlossen: "Geschlossen",
 }
-
-const INPUT_BG = "#EDF2F7"
 
 export default function PhasenTexteManager() {
   const [phasenTexte, setPhasenTexte] = useState<PhasenText[]>([])
@@ -126,153 +123,137 @@ export default function PhasenTexteManager() {
   }
 
   if (loading) {
-    return <Text color="gray.400">Phasen-Texte werden geladen...</Text>
+    return <span className="text-gray-400">Phasen-Texte werden geladen...</span>
   }
 
   return (
-    <Box maxW="900px" mx="auto">
-      <HStack justify="space-between" mb={4}>
-        <Heading size="md">Phasen-Texte</Heading>
-        <Button
-          size="sm"
-          colorPalette="blue"
-          variant="outline"
+    <div className="max-w-[900px] mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Phasen-Texte</h2>
+        <button
+          className="border border-primary text-primary px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/5 disabled:opacity-50"
           onClick={handleSeed}
-          loading={seeding}
+          disabled={seeding}
         >
-          Standardtexte laden
-        </Button>
-      </HStack>
+          {seeding ? "..." : "Standardtexte laden"}
+        </button>
+      </div>
 
       {phasenTexte.length === 0 ? (
-        <Box textAlign="center" py={8}>
-          <Text color="gray.400" mb={2}>Noch keine Phasen-Texte vorhanden.</Text>
-          <Text fontSize="sm" color="gray.400">
+        <div className="text-center py-8">
+          <p className="text-gray-400 mb-2">Noch keine Phasen-Texte vorhanden.</p>
+          <p className="text-sm text-gray-400">
             Klicke auf "Standardtexte laden" um die Vorlagen zu initialisieren.
-          </Text>
-        </Box>
+          </p>
+        </div>
       ) : (
-        <VStack gap={2} align="stretch">
+        <div className="flex flex-col gap-2">
           {phasenTexte.map((pt) => {
             const state = editState[pt.id]
             if (!state) return null
             const isOpen = openIds.has(pt.id)
 
             return (
-              <Box
+              <div
                 key={pt.id}
-                bg="white"
-                borderRadius="md"
-                borderWidth={1}
-                borderColor={isOpen ? "blue.200" : "gray.200"}
-                opacity={state.aktiv ? 1 : 0.6}
-                transition="all 0.15s"
+                className={`bg-white rounded-md border transition-all duration-150 ${
+                  isOpen ? "border-blue-200" : "border-gray-200"
+                } ${state.aktiv ? "" : "opacity-60"}`}
               >
-                {/* Collapsed header — immer sichtbar */}
-                <HStack
-                  justify="space-between"
-                  px={4}
-                  py={3}
-                  cursor="pointer"
+                {/* Collapsed header */}
+                <div
+                  className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50 rounded-md"
                   onClick={() => toggleOpen(pt.id)}
-                  _hover={{ bg: "gray.50" }}
-                  borderRadius="md"
                 >
-                  <HStack gap={3}>
-                    <Text fontSize="sm" color="gray.400" w="16px">
-                      {isOpen ? "▾" : "▸"}
-                    </Text>
-                    <Badge colorPalette={PHASE_COLORS[pt.phase] || "gray"} size="lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-400 w-4">
+                      {isOpen ? "\u25BE" : "\u25B8"}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                        PHASE_COLORS[pt.phase] || "bg-gray-100 text-gray-700"
+                      }`}
+                    >
                       {PHASE_LABELS[pt.phase] || pt.phase}
-                    </Badge>
-                    <Text fontSize="sm" color="gray.600">{state.titel}</Text>
+                    </span>
+                    <span className="text-sm text-gray-600">{state.titel}</span>
                     {!state.aktiv && (
-                      <Badge colorPalette="gray" size="sm">Inaktiv</Badge>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                        Inaktiv
+                      </span>
                     )}
-                  </HStack>
-                  <HStack gap={2} onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="xs"
-                      variant="ghost"
+                  </div>
+                  <div
+                    className="flex items-center gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="px-3 py-1 rounded-md text-xs hover:bg-gray-50"
                       onClick={() => updateField(pt.id, "aktiv", !state.aktiv)}
                     >
                       {state.aktiv ? "Deaktivieren" : "Aktivieren"}
-                    </Button>
+                    </button>
                     {hasChanges(pt) && (
-                      <Button
-                        size="xs"
-                        colorPalette="blue"
+                      <button
+                        className="bg-primary text-white px-3 py-1 rounded-md text-xs font-medium hover:bg-primary/90 disabled:opacity-50"
                         onClick={() => handleSave(pt)}
-                        loading={savingId === pt.id}
+                        disabled={savingId === pt.id}
                       >
-                        Speichern
-                      </Button>
+                        {savingId === pt.id ? "..." : "Speichern"}
+                      </button>
                     )}
-                  </HStack>
-                </HStack>
+                  </div>
+                </div>
 
                 {/* Expanded content */}
                 {isOpen && (
-                  <Box px={4} pb={4} pt={1}>
-                    <VStack gap={3} align="stretch">
-                      <Box>
-                        <Text fontSize="xs" fontWeight="medium" color="gray.500" mb={1}>
+                  <div className="px-4 pb-4 pt-1">
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 mb-1 block">
                           Titel
-                        </Text>
-                        <Input
+                        </label>
+                        <input
                           value={state.titel}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          onChange={(e) =>
                             updateField(pt.id, "titel", e.target.value)
                           }
-                          size="sm"
-                          bg={INPUT_BG}
-                          borderColor="gray.200"
+                          className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
-                      </Box>
-                      <Box>
-                        <Text fontSize="xs" fontWeight="medium" color="gray.500" mb={1}>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 mb-1 block">
                           Inhalt
-                        </Text>
+                        </label>
                         <textarea
                           value={state.inhalt}
                           onChange={(e) => updateField(pt.id, "inhalt", e.target.value)}
                           rows={4}
-                          style={{
-                            width: "100%",
-                            padding: "8px 12px",
-                            border: "1px solid #E2E8F0",
-                            borderRadius: "6px",
-                            fontSize: "14px",
-                            resize: "vertical",
-                            backgroundColor: INPUT_BG,
-                          }}
+                          className="w-full border border-gray-200 rounded-md px-3 py-2 text-sm resize-y bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
-                      </Box>
-                      <Box>
-                        <Text fontSize="xs" fontWeight="medium" color="gray.500" mb={1}>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 mb-1 block">
                           Timeout (Sekunden)
-                        </Text>
-                        <Input
+                        </label>
+                        <input
                           value={state.timeout_seconds}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          onChange={(e) =>
                             updateField(pt.id, "timeout_seconds", e.target.value)
                           }
                           placeholder="Kein Timeout"
-                          size="sm"
                           type="number"
-                          maxW="200px"
-                          bg={INPUT_BG}
-                          borderColor="gray.200"
+                          className="max-w-[200px] border border-gray-200 rounded-md px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
-                      </Box>
-                    </VStack>
-                  </Box>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </Box>
+              </div>
             )
           })}
-        </VStack>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }

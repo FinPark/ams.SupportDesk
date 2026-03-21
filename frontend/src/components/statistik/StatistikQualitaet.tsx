@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, HStack, Text } from "@chakra-ui/react"
 import api from "@/lib/api"
 import KpiCard from "./charts/KpiCard"
 import TrendChart from "./charts/TrendChart"
@@ -22,19 +21,19 @@ export default function StatistikQualitaet({ params }: Props) {
   }, [params])
 
   if (loading || !data) {
-    return <Text color="gray.400">Laden...</Text>
+    return <p className="text-gray-400">Laden...</p>
   }
 
   const { kpis, sterne_verteilung, bewertung_trend, letzte_kommentare } = data
 
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-4">
       {/* KPI Cards */}
-      <HStack gap={4} flexWrap="wrap">
+      <div className="flex items-center gap-4 flex-wrap">
         <KpiCard label="Ø Sterne" value={kpis.avg_sterne} suffix="/ 5" />
         <KpiCard label="Lösungsrate" value={kpis.loesungsrate} suffix="%" />
         <KpiCard label="Bewertungsquote" value={kpis.bewertungsquote} suffix="%" />
-      </HStack>
+      </div>
 
       {/* Sterne-Verteilung */}
       <DistributionChart
@@ -59,38 +58,34 @@ export default function StatistikQualitaet({ params }: Props) {
       />
 
       {/* Letzte Kommentare */}
-      <Box bg="white" borderRadius="lg" p={4} borderWidth={1} borderColor="gray.200">
-        <Text fontWeight="bold" mb={3}>Letzte Bewertungs-Kommentare</Text>
+      <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <p className="font-bold mb-3">Letzte Bewertungs-Kommentare</p>
         {letzte_kommentare.length === 0 ? (
-          <Text color="gray.400" fontSize="sm">Keine Kommentare vorhanden</Text>
+          <p className="text-gray-400 text-sm">Keine Kommentare vorhanden</p>
         ) : (
-          <Box display="flex" flexDirection="column" gap={2}>
+          <div className="flex flex-col gap-2">
             {letzte_kommentare.map((k: any, i: number) => (
-              <Box
+              <div
                 key={i}
-                p={3}
-                bg="gray.50"
-                borderRadius="md"
-                borderLeftWidth={3}
-                borderColor={k.geloest ? "green.400" : "orange.400"}
+                className={`p-3 bg-gray-50 rounded-md border-l-[3px] ${k.geloest ? "border-l-green-400" : "border-l-orange-400"}`}
               >
-                <HStack gap={2} mb={1}>
-                  <Text fontSize="sm" fontWeight="bold">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-bold">
                     {"★".repeat(k.sterne)}{"☆".repeat(5 - k.sterne)}
-                  </Text>
-                  <Text fontSize="xs" color="gray.500">
+                  </span>
+                  <span className="text-xs text-gray-500">
                     {new Date(k.created_at).toLocaleDateString("de-DE")}
-                  </Text>
+                  </span>
                   {k.geloest && (
-                    <Text fontSize="xs" color="green.600" fontWeight="bold">Gelöst</Text>
+                    <span className="text-xs text-green-600 font-bold">Gelöst</span>
                   )}
-                </HStack>
-                <Text fontSize="sm">{k.kommentar}</Text>
-              </Box>
+                </div>
+                <p className="text-sm">{k.kommentar}</p>
+              </div>
             ))}
-          </Box>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+    </div>
   )
 }

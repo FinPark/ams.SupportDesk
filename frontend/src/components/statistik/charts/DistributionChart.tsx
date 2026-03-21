@@ -1,4 +1,3 @@
-import { Box, Text } from "@chakra-ui/react"
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Legend,
@@ -20,8 +19,8 @@ interface Props {
 
 export default function DistributionChart({ title, data, nameKey, valueKey, type, height = 300 }: Props) {
   return (
-    <Box bg="white" borderRadius="lg" p={4} borderWidth={1} borderColor="gray.200" flex={1} minW={0}>
-      <Text fontWeight="bold" mb={3}>{title}</Text>
+    <div className="bg-white rounded-lg p-4 border border-gray-200 flex-1 min-w-0">
+      <p className="font-bold mb-3">{title}</p>
       <ResponsiveContainer width="100%" height={height}>
         {type === "pie" ? (
           <PieChart>
@@ -54,6 +53,6 @@ export default function DistributionChart({ title, data, nameKey, valueKey, type
           </BarChart>
         )}
       </ResponsiveContainer>
-    </Box>
+    </div>
   )
 }

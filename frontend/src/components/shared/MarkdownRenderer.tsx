@@ -3,7 +3,6 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import rehypeRaw from "rehype-raw"
 import mermaid from "mermaid"
-import { Box } from "@chakra-ui/react"
 
 mermaid.initialize({
   startOnLoad: false,
@@ -28,14 +27,14 @@ export default function MarkdownRenderer({ content }: Props) {
   }, [content])
 
   return (
-    <Box ref={containerRef} className="markdown-content" fontSize="sm" lineHeight="tall" css={{ "& p": { margin: "0.25em 0" }, "& ul, & ol": { paddingLeft: "1.5em", margin: "0.25em 0" }, "& h1, & h2, & h3, & h4": { fontWeight: "bold", margin: "0.5em 0 0.25em" }, "& blockquote": { borderLeft: "3px solid", borderColor: "gray.300", paddingLeft: "0.75em", margin: "0.25em 0" } }}>
+    <div ref={containerRef} className="text-sm leading-relaxed [&_p]:my-1 [&_ul]:pl-6 [&_ul]:my-1 [&_ol]:pl-6 [&_ol]:my-1 [&_h1]:font-bold [&_h1]:my-2 [&_h2]:font-bold [&_h2]:my-2 [&_h3]:font-bold [&_h3]:my-1 [&_h4]:font-bold [&_h4]:my-1 [&_blockquote]:border-l-3 [&_blockquote]:border-gray-300 [&_blockquote]:pl-3 [&_blockquote]:my-1">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         children={content}
         components={{
           p({ children }) {
-            return <p style={{ margin: "0.25em 0", lineHeight: 1.5 }}>{children}</p>
+            return <p className="my-1 leading-relaxed">{children}</p>
           },
           code({ className, children, ...props }) {
             const match = /language-mermaid/.exec(className || "")
@@ -48,28 +47,21 @@ export default function MarkdownRenderer({ content }: Props) {
             }
             if (className) {
               return (
-                <Box
-                  as="pre"
-                  bg="gray.50"
-                  p={3}
-                  borderRadius="md"
-                  overflowX="auto"
-                  fontSize="xs"
-                >
+                <pre className="bg-gray-50 p-3 rounded-md overflow-x-auto text-xs">
                   <code className={className} {...props}>
                     {children}
                   </code>
-                </Box>
+                </pre>
               )
             }
             return (
-              <Box as="code" bg="gray.100" px={1} borderRadius="sm" fontSize="xs" {...props}>
+              <code className="bg-gray-100 px-1 rounded text-xs" {...props}>
                 {children}
-              </Box>
+              </code>
             )
           },
         }}
       />
-    </Box>
+    </div>
   )
 }

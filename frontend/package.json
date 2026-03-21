@@ -9,9 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.0",
-    "@emotion/react": "^11.0",
+    "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.6.0",
+    "lucide-react": "^0.577.0",
     "mermaid": "^11.13.0",
     "react": "~18.3.1",
     "react-dom": "~18.3.1",
@@ -19,7 +19,8 @@
     "react-router-dom": "^7.0.0",
     "recharts": "^3.8.0",
     "rehype-raw": "^7.0.0",
-    "remark-gfm": "^4.0.0"
+    "remark-gfm": "^4.0.0",
+    "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "@types/react": "~18.3.0",

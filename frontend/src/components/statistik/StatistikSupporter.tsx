@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, Text } from "@chakra-ui/react"
 import api from "@/lib/api"
 import DistributionChart from "./charts/DistributionChart"
 
@@ -32,49 +31,49 @@ export default function StatistikSupporter({ params }: Props) {
   }, [params])
 
   if (loading || !data) {
-    return <Text color="gray.400">Laden...</Text>
+    return <p className="text-gray-400">Laden...</p>
   }
 
   const { rangliste } = data
 
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-4">
       {/* Rangliste Tabelle */}
-      <Box bg="white" borderRadius="lg" borderWidth={1} borderColor="gray.200" overflow="auto">
-        <Box as="table" w="100%" fontSize="sm">
-          <Box as="thead" bg="gray.50">
-            <Box as="tr">
+      <div className="bg-white rounded-lg border border-gray-200 overflow-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
               {["#", "Kürzel", "Name", "Tickets", "Aktiv", "Ø Dauer (h)", "Ø Bewertung", "Lösungsrate", "KI-Sessions"].map((h) => (
-                <Box as="th" key={h} px={3} py={2} textAlign="left" fontWeight="semibold" color="gray.600">
+                <th key={h} className="px-3 py-2 text-left font-semibold text-gray-600">
                   {h}
-                </Box>
+                </th>
               ))}
-            </Box>
-          </Box>
-          <Box as="tbody">
+            </tr>
+          </thead>
+          <tbody>
             {rangliste.map((s, i) => (
-              <Box as="tr" key={s.supporter_id} borderTopWidth={1} borderColor="gray.100">
-                <Box as="td" px={3} py={2} fontWeight="bold" color="gray.400">{i + 1}</Box>
-                <Box as="td" px={3} py={2} fontWeight="bold" color="blue.500">{s.kuerzel}</Box>
-                <Box as="td" px={3} py={2}>{s.name}</Box>
-                <Box as="td" px={3} py={2} fontWeight="bold">{s.tickets_gesamt}</Box>
-                <Box as="td" px={3} py={2}>{s.aktive_tickets}</Box>
-                <Box as="td" px={3} py={2}>{s.avg_bearbeitungsdauer_h ?? "–"}</Box>
-                <Box as="td" px={3} py={2}>{s.avg_bewertung ?? "–"}</Box>
-                <Box as="td" px={3} py={2}>{s.loesungsrate}%</Box>
-                <Box as="td" px={3} py={2}>{s.ki_sessions}</Box>
-              </Box>
+              <tr key={s.supporter_id} className="border-t border-gray-100">
+                <td className="px-3 py-2 font-bold text-gray-400">{i + 1}</td>
+                <td className="px-3 py-2 font-bold text-primary">{s.kuerzel}</td>
+                <td className="px-3 py-2">{s.name}</td>
+                <td className="px-3 py-2 font-bold">{s.tickets_gesamt}</td>
+                <td className="px-3 py-2">{s.aktive_tickets}</td>
+                <td className="px-3 py-2">{s.avg_bearbeitungsdauer_h ?? "–"}</td>
+                <td className="px-3 py-2">{s.avg_bewertung ?? "–"}</td>
+                <td className="px-3 py-2">{s.loesungsrate}%</td>
+                <td className="px-3 py-2">{s.ki_sessions}</td>
+              </tr>
             ))}
             {rangliste.length === 0 && (
               <tr>
-                <td colSpan={9} style={{ padding: "24px 12px", textAlign: "center", color: "#A0AEC0" }}>
+                <td colSpan={9} className="px-3 py-6 text-center text-gray-400">
                   Keine Daten vorhanden
                 </td>
               </tr>
             )}
-          </Box>
-        </Box>
-      </Box>
+          </tbody>
+        </table>
+      </div>
 
       {/* Bar Chart */}
       <DistributionChart
@@ -85,6 +84,6 @@ export default function StatistikSupporter({ params }: Props) {
         type="bar"
         height={300}
       />
-    </Box>
+    </div>
   )
 }

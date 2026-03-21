@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { Badge, Box, Button, Heading, HStack, Text } from "@chakra-ui/react"
 import api from "@/lib/api"
 import { Ticket, Nachricht, ChatSession, Supporter } from "@/lib/types"
 import { useWebSocket } from "@/hooks/useWebSocket"
@@ -40,13 +39,13 @@ const STATUS_LABELS: Record<string, string> = {
   geschlossen: "Geschlossen",
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  eingang: "yellow",
-  in_bearbeitung: "blue",
-  wartet: "orange",
-  geloest: "green",
-  bewertung: "purple",
-  geschlossen: "gray",
+const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  eingang: { bg: "bg-yellow-100", text: "text-yellow-800", border: "border-yellow-300" },
+  in_bearbeitung: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-300" },
+  wartet: { bg: "bg-orange-100", text: "text-orange-800", border: "border-orange-300" },
+  geloest: { bg: "bg-green-100", text: "text-green-800", border: "border-green-300" },
+  bewertung: { bg: "bg-purple-100", text: "text-purple-800", border: "border-purple-300" },
+  geschlossen: { bg: "bg-gray-100", text: "text-gray-800", border: "border-gray-300" },
 }
 
 const NEXT_STATUSES: Record<string, string[]> = {
@@ -363,154 +362,127 @@ export default function TicketWorkspace({ supporter, onLogout }: Props) {
 
   if (!ticket) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <span className="text-gray-400">Laden...</span>
+      </div>
     )
   }
 
   const isClosed = ticket.status === "geschlossen"
 
   return (
-    <Box h="100vh" display="flex" flexDirection="column">
+    <div className="h-screen flex flex-col">
       {/* Workspace Header */}
-      <Box
-        bg="blue.500"
-        color="white"
-        px={4}
-        py={2}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-      >
-        <HStack gap={4}>
-          <Heading
-            size="md"
-            cursor="pointer"
+      <div className="bg-primary text-white px-4 py-2 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <h2
+            className="text-lg font-bold cursor-pointer"
             onClick={() => navigate("/")}
           >
             ams.SupportDesk
-          </Heading>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
+          </h2>
+          <button
+            className="text-sm text-white hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/")}
           >
-            ← Tickets
-          </Button>
-          <Box w="1px" h="20px" bg="whiteAlpha.400" />
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+            &larr; Tickets
+          </button>
+          <div className="w-px h-5 bg-white/40" />
+          <button
+            className="text-sm text-white/80 hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => window.open("/portal", "_blank")}
           >
             Kunden-Portal
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-sm text-white/80 hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/statistik")}
           >
             Statistik
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-sm text-white/80 hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/admin")}
           >
             Admin
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-sm text-white/80 hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/hilfe")}
           >
             Hilfe
-          </Button>
-        </HStack>
-        <HStack gap={3}>
-          <Text fontSize="sm">{supporter.kuerzel}</Text>
-          <Button variant="ghost" size="sm" color="white" onClick={onLogout}>
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm">{supporter.kuerzel}</span>
+          <button
+            className="text-sm text-white hover:bg-white/10 px-2 py-1 rounded"
+            onClick={onLogout}
+          >
             Abmelden
-          </Button>
-        </HStack>
-      </Box>
+          </button>
+        </div>
+      </div>
 
       {/* Ticket-Info Bar */}
-      <Box
-        px={4}
-        py={2}
-        bg="white"
-        borderBottomWidth={1}
-        borderColor="gray.200"
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        gap={4}
-        flexWrap="wrap"
-      >
-        <HStack gap={3} flex={1} minW={0}>
-          <Text fontWeight="bold" fontSize="sm" color="blue.600" flexShrink={0}>
+      <div className="px-4 py-2 bg-white border-b border-gray-200 flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <span className="font-bold text-sm text-primary shrink-0">
             {supporter.kuerzel}
-          </Text>
-          <Text fontSize="sm" color="gray.500" flexShrink={0}>|</Text>
-          <Text fontWeight="bold" fontSize="sm" color="blue.500" flexShrink={0}>
+          </span>
+          <span className="text-sm text-gray-500 shrink-0">|</span>
+          <span className="font-bold text-sm text-primary shrink-0">
             #{ticket.nummer}
-          </Text>
-          <Text fontSize="sm" color="gray.500" flexShrink={0}>|</Text>
-          <Text fontWeight="medium" fontSize="sm" flexShrink={0}>
+          </span>
+          <span className="text-sm text-gray-500 shrink-0">|</span>
+          <span className="font-medium text-sm shrink-0">
             {ticket.kunde_name}
-          </Text>
-          <Text fontSize="sm" color="gray.500" flexShrink={0}>|</Text>
-          <Text fontSize="sm" lineClamp={1} flex={1} minW={0}>
+          </span>
+          <span className="text-sm text-gray-500 shrink-0">|</span>
+          <span className="text-sm truncate flex-1 min-w-0">
             {ticket.titel}
-          </Text>
-          <Text fontSize="sm" color="gray.500" flexShrink={0}>|</Text>
-          <HStack gap={1} flexShrink={0}>
+          </span>
+          <span className="text-sm text-gray-500 shrink-0">|</span>
+          <div className="flex items-center gap-1 shrink-0">
             <TagEditor
               ticketId={ticketId!}
               tags={ticket.tags}
               onTagsChange={(tags) => setTicket({ ...ticket, tags })}
             />
-          </HStack>
-        </HStack>
+          </div>
+        </div>
 
-        <HStack gap={2} flexShrink={0}>
-          {(NEXT_STATUSES[ticket.status] || []).map((s) => (
-            <Button
-              key={s}
-              size="xs"
-              variant="outline"
-              colorPalette={STATUS_COLORS[s]}
-              onClick={() => handleStatusChange(s)}
-            >
-              → {STATUS_LABELS[s]}
-            </Button>
-          ))}
-          <Badge colorPalette={STATUS_COLORS[ticket.status]} size="lg">
-            {STATUS_LABELS[ticket.status] || ticket.status}
-          </Badge>
-        </HStack>
-      </Box>
+        <div className="flex items-center gap-2 shrink-0">
+          {(NEXT_STATUSES[ticket.status] || []).map((s) => {
+            const colors = STATUS_COLORS[s] || STATUS_COLORS.eingang
+            return (
+              <button
+                key={s}
+                className={`text-xs px-2 py-1 rounded border ${colors.border} ${colors.text} hover:opacity-80 transition`}
+                onClick={() => handleStatusChange(s)}
+              >
+                &rarr; {STATUS_LABELS[s]}
+              </button>
+            )
+          })}
+          {(() => {
+            const colors = STATUS_COLORS[ticket.status] || STATUS_COLORS.eingang
+            return (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${colors.bg} ${colors.text}`}>
+                {STATUS_LABELS[ticket.status] || ticket.status}
+              </span>
+            )
+          })()}
+        </div>
+      </div>
 
       {/* Split-Layout: Kundenchat | KI-Chat */}
-      <Box flex={1} display="flex" overflow="hidden">
+      <div className="flex-1 flex overflow-hidden">
         {/* Links: Kundengespräch */}
-        <Box
-          flex={1}
-          minW={0}
-          borderWidth={activePanel === "kunde" ? 3 : 0}
-          borderColor="blue.400"
-          transition="all 0.2s"
+        <div
+          className={`flex-1 min-w-0 transition-all duration-200 ${
+            activePanel === "kunde" ? "border-3 border-blue-400" : ""
+          }`}
         >
           <KundenChat
             nachrichten={nachrichten}
@@ -521,15 +493,13 @@ export default function TicketWorkspace({ supporter, onLogout }: Props) {
             isActive={activePanel === "kunde"}
             onFocus={() => setActivePanel("kunde")}
           />
-        </Box>
+        </div>
 
         {/* Rechts: KI-Recherche */}
-        <Box
-          flex={1}
-          minW={0}
-          borderWidth={activePanel === "ki" ? 3 : 0}
-          borderColor="orange.400"
-          transition="all 0.2s"
+        <div
+          className={`flex-1 min-w-0 transition-all duration-200 ${
+            activePanel === "ki" ? "border-3 border-orange-400" : ""
+          }`}
         >
           <KIChat
             nachrichten={kiNachrichten}
@@ -544,8 +514,8 @@ export default function TicketWorkspace({ supporter, onLogout }: Props) {
             isActive={activePanel === "ki"}
             onFocus={() => setActivePanel("ki")}
           />
-        </Box>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

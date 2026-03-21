@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react"
-import { Box, Button, HStack, Input, Text } from "@chakra-ui/react"
 import MarkdownRenderer from "@/components/shared/MarkdownRenderer"
 import TemplatePicker, { useTemplatePicker } from "@/components/shared/TemplatePicker"
 import { Nachricht } from "@/lib/types"
@@ -57,95 +56,78 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, onDeleteNa
   }
 
   return (
-    <Box display="flex" flexDirection="column" h="100%" borderRightWidth={1} borderColor="gray.200">
+    <div className="flex flex-col h-full border-r border-gray-200">
       {/* Header */}
-      <Box
-        px={4}
-        py={2}
-        borderBottomWidth={1}
-        borderColor={isActive ? "blue.400" : "gray.200"}
-        bg={isActive ? "blue.50" : "white"}
-        transition="all 0.2s"
+      <div
+        className={`px-4 py-2 border-b transition-all duration-200 ${
+          isActive ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white"
+        }`}
       >
-        <HStack justify="space-between">
-          <Text fontWeight="bold" fontSize="sm" color={isActive ? "blue.600" : "gray.700"}>
-            Kundengespräch
-          </Text>
+        <div className="flex items-center justify-between">
+          <span className={`font-bold text-sm ${isActive ? "text-blue-600" : "text-gray-700"}`}>
+            Kundengespr&auml;ch
+          </span>
           {markierte.size > 0 && (
-            <Button
-              size="xs"
-              colorPalette="blue"
-              variant="outline"
+            <button
+              className="text-xs px-2 py-1 rounded border border-blue-300 text-blue-600 hover:bg-blue-50 transition"
               onClick={handleSendToKI}
             >
-              {markierte.size} Nachricht{markierte.size > 1 ? "en" : ""} an KI senden →
-            </Button>
+              {markierte.size} Nachricht{markierte.size > 1 ? "en" : ""} an KI senden &rarr;
+            </button>
           )}
-        </HStack>
-      </Box>
+        </div>
+      </div>
 
       {/* Nachrichten */}
-      <Box flex={1} overflowY="auto" px={4} py={3} bg="gray.50">
+      <div className="flex-1 overflow-y-auto px-4 py-3 bg-gray-50">
         {nachrichten.length === 0 && (
-          <Box textAlign="center" py={10}>
-            <Text color="gray.400" fontSize="sm">Noch keine Nachrichten</Text>
-          </Box>
+          <div className="text-center py-10">
+            <span className="text-gray-400 text-sm">Noch keine Nachrichten</span>
+          </div>
         )}
         {nachrichten.map((msg) => {
           const isSupporter = msg.rolle === "supporter"
           const isMarked = markierte.has(msg.id)
 
           return (
-            <Box
+            <div
               key={msg.id}
-              display="flex"
-              justifyContent={isSupporter ? "flex-end" : "flex-start"}
-              mb={3}
-              position="relative"
+              className={`flex mb-3 relative ${isSupporter ? "justify-end" : "justify-start"}`}
             >
-              {/* Markier-Indikator links */}
+              {/* Markier-Indikator links (Kunde) */}
               {!isSupporter && (
-                <Box
-                  w="4px"
-                  bg={isMarked ? "blue.400" : "transparent"}
-                  borderRadius="full"
-                  mr={2}
-                  cursor="pointer"
-                  _hover={{ bg: isMarked ? "blue.500" : "gray.300" }}
+                <div
+                  className={`w-1 rounded-full mr-2 shrink-0 self-stretch cursor-pointer transition-colors ${
+                    isMarked ? "bg-blue-400 hover:bg-blue-500" : "bg-transparent hover:bg-gray-300"
+                  }`}
                   onClick={() => toggleMarkiert(msg.id)}
-                  flexShrink={0}
-                  alignSelf="stretch"
                   title={isMarked ? "Markierung entfernen" : "Für KI markieren"}
                 />
               )}
-              <Box
-                maxW="80%"
-                bg={isSupporter ? (isMarked ? "blue.600" : "blue.500") : isMarked ? "blue.50" : "white"}
-                color={isSupporter ? "white" : "gray.800"}
-                px={4}
-                py={3}
-                borderRadius="xl"
-                borderBottomRightRadius={isSupporter ? "sm" : "xl"}
-                borderBottomLeftRadius={isSupporter ? "xl" : "sm"}
-                shadow="sm"
-                cursor="pointer"
+              <div
+                className={`max-w-[80%] px-4 py-3 shadow-sm cursor-pointer transition-all duration-150 ${
+                  isSupporter
+                    ? isMarked
+                      ? "bg-primary-dark text-white rounded-xl rounded-br-sm border border-blue-200"
+                      : "bg-primary text-white rounded-xl rounded-br-sm"
+                    : isMarked
+                      ? "bg-blue-50 text-gray-800 rounded-xl rounded-bl-sm border border-blue-300"
+                      : "bg-white text-gray-800 rounded-xl rounded-bl-sm"
+                }`}
                 onClick={() => toggleMarkiert(msg.id)}
-                borderWidth={isMarked ? 1 : 0}
-                borderColor={isSupporter ? "blue.200" : "blue.300"}
-                transition="all 0.15s"
               >
-                <HStack justify="space-between" mb={1}>
-                  <Text fontSize="xs" fontWeight="bold" opacity={0.6}>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold opacity-60">
                     {isSupporter ? "Support" : "Kunde"}
                     {isMarked && (
-                      <Text as="span" color={isSupporter ? "blue.100" : "blue.500"} ml={2}>● markiert</Text>
+                      <span className={`ml-2 ${isSupporter ? "text-blue-100" : "text-blue-500"}`}>
+                        &#9679; markiert
+                      </span>
                     )}
-                  </Text>
+                  </span>
                   {isSupporter && (
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      colorPalette="red"
+                    <button
+                      className="text-xs px-1 min-w-0 text-red-400 hover:text-red-600 transition"
                       onClick={(e) => {
                         e.stopPropagation()
                         if (window.confirm("Nachricht wirklich löschen?")) {
@@ -153,45 +135,38 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, onDeleteNa
                         }
                       }}
                       title="Löschen"
-                      px={1}
-                      minW="auto"
                     >
-                      🗑
-                    </Button>
+                      &#128465;
+                    </button>
                   )}
-                </HStack>
+                </div>
                 <MarkdownRenderer content={msg.inhalt_markdown} />
-                <Text fontSize="xs" mt={1} opacity={0.5} textAlign="right">
+                <div className="text-xs mt-1 opacity-50 text-right">
                   {new Date(msg.created_at).toLocaleTimeString("de-DE", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
-                </Text>
-              </Box>
-              {/* Markier-Indikator rechts für Supporter */}
+                </div>
+              </div>
+              {/* Markier-Indikator rechts (Supporter) */}
               {isSupporter && (
-                <Box
-                  w="4px"
-                  bg={isMarked ? "blue.400" : "transparent"}
-                  borderRadius="full"
-                  ml={2}
-                  cursor="pointer"
-                  _hover={{ bg: isMarked ? "blue.500" : "gray.300" }}
+                <div
+                  className={`w-1 rounded-full ml-2 shrink-0 self-stretch cursor-pointer transition-colors ${
+                    isMarked ? "bg-blue-400 hover:bg-blue-500" : "bg-transparent hover:bg-gray-300"
+                  }`}
                   onClick={() => toggleMarkiert(msg.id)}
-                  flexShrink={0}
-                  alignSelf="stretch"
                   title={isMarked ? "Markierung entfernen" : "Für KI markieren"}
                 />
               )}
-            </Box>
+            </div>
           )
         })}
         <div ref={messagesEndRef} />
-      </Box>
+      </div>
 
       {/* Eingabe */}
       {!disabled && (
-        <Box bg="white" borderTopWidth={1} borderColor="gray.200" px={4} py={3} position="relative">
+        <div className="bg-white border-t border-gray-200 px-4 py-3 relative">
           <TemplatePicker
             visible={pickerVisible}
             filter={templateFilter}
@@ -200,27 +175,30 @@ export default function KundenChat({ nachrichten, onSend, onSendToKI, onDeleteNa
             onSelect={handleTemplateSelect}
           />
           <form onSubmit={handleSend}>
-            <HStack>
-              <Input
+            <div className="flex items-center gap-2">
+              <input
+                className="flex-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="Antwort an Kunden... (/ für Vorlagen)"
                 value={input}
                 onChange={(e) => handleInputChange(e.target.value)}
                 onKeyDown={handleKeyDown}
                 onFocus={onFocus}
-                flex={1}
               />
-              <Button
+              <button
                 type="submit"
-                colorPalette="blue"
-                loading={sending}
-                disabled={!input.trim()}
+                className="bg-primary text-white text-sm px-4 py-2 rounded-md hover:opacity-90 transition disabled:opacity-50"
+                disabled={sending || !input.trim()}
               >
-                Senden
-              </Button>
-            </HStack>
+                {sending ? (
+                  <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                ) : (
+                  "Senden"
+                )}
+              </button>
+            </div>
           </form>
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }

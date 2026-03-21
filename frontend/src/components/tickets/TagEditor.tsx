@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Badge, Box, HStack, Input } from "@chakra-ui/react"
 import api from "@/lib/api"
 import { TicketTag } from "@/lib/types"
 
@@ -64,43 +63,38 @@ export default function TagEditor({ ticketId, tags, onTagsChange }: Props) {
   )
 
   return (
-    <Box>
-      <HStack gap={1} flexWrap="wrap" mb={2}>
+    <div>
+      <div className="flex items-center gap-1 flex-wrap mb-2">
         {tags.map((tag) => (
-          <Badge
+          <span
             key={tag.id}
-            colorPalette="blue"
-            variant="subtle"
-            cursor="pointer"
+            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 cursor-pointer hover:opacity-70"
             onClick={() => removeTag(tag.id)}
-            _hover={{ opacity: 0.7 }}
           >
             #{tag.tag} ×
-          </Badge>
+          </span>
         ))}
-      </HStack>
-      <Input
+      </div>
+      <input
+        className="w-full border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
         placeholder="Tag hinzufügen..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
-        size="sm"
       />
       {input && filteredSuggestions.length > 0 && (
-        <HStack gap={1} mt={1} flexWrap="wrap">
+        <div className="flex items-center gap-1 mt-1 flex-wrap">
           {filteredSuggestions.slice(0, 5).map((s) => (
-            <Badge
+            <span
               key={s}
-              variant="outline"
-              cursor="pointer"
+              className="inline-flex items-center px-2 py-0.5 rounded border border-blue-200 text-xs text-blue-700 cursor-pointer hover:bg-blue-50"
               onClick={() => addTag(s)}
-              _hover={{ bg: "blue.50" }}
             >
               #{s}
-            </Badge>
+            </span>
           ))}
-        </HStack>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }

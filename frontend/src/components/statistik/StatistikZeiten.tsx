@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { Box, HStack, Text } from "@chakra-ui/react"
 import api from "@/lib/api"
 import KpiCard from "./charts/KpiCard"
 import TrendChart from "./charts/TrendChart"
@@ -24,7 +23,7 @@ export default function StatistikZeiten({ params }: Props) {
   }, [params])
 
   if (loading || !data) {
-    return <Text color="gray.400">Laden...</Text>
+    return <p className="text-gray-400">Laden...</p>
   }
 
   const { kpis, bearbeitungsdauer_verteilung, antwortzeit_trend, heatmap } = data
@@ -33,14 +32,14 @@ export default function StatistikZeiten({ params }: Props) {
   const maxAnzahl = Math.max(...heatmap.map((h: any) => h.anzahl), 1)
 
   return (
-    <Box display="flex" flexDirection="column" gap={4}>
+    <div className="flex flex-col gap-4">
       {/* KPI Cards */}
-      <HStack gap={4} flexWrap="wrap">
+      <div className="flex items-center gap-4 flex-wrap">
         <KpiCard label="Ø Erste Antwort" value={kpis.avg_first_response_min} suffix="min" />
         <KpiCard label="Ø Bearbeitungsdauer" value={kpis.avg_bearbeitungsdauer_h} suffix="h" />
         <KpiCard label="Median Bearbeitungsdauer" value={kpis.median_bearbeitungsdauer_h} suffix="h" />
         <KpiCard label="Ø Session-Dauer" value={kpis.avg_session_dauer_min} suffix="min" />
-      </HStack>
+      </div>
 
       {/* Bearbeitungsdauer-Verteilung */}
       <DistributionChart
@@ -62,53 +61,52 @@ export default function StatistikZeiten({ params }: Props) {
       />
 
       {/* Heatmap */}
-      <Box bg="white" borderRadius="lg" p={4} borderWidth={1} borderColor="gray.200">
-        <Text fontWeight="bold" mb={3}>Ticket-Eingang: Wochentag x Stunde</Text>
-        <Box overflowX="auto">
-          <Box display="flex" gap={0}>
+      <div className="bg-white rounded-lg p-4 border border-gray-200">
+        <p className="font-bold mb-3">Ticket-Eingang: Wochentag x Stunde</p>
+        <div className="overflow-x-auto">
+          <div className="flex gap-0">
             {/* Y-Axis Labels */}
-            <Box display="flex" flexDirection="column" mr={1} pt="20px">
+            <div className="flex flex-col mr-1 pt-5">
               {WOCHENTAGE.map((tag) => (
-                <Box key={tag} h="24px" display="flex" alignItems="center" justifyContent="flex-end" pr={1}>
-                  <Text fontSize="xs" color="gray.500">{tag}</Text>
-                </Box>
+                <div key={tag} className="h-6 flex items-center justify-end pr-1">
+                  <span className="text-xs text-gray-500">{tag}</span>
+                </div>
               ))}
-            </Box>
+            </div>
             {/* Grid */}
-            <Box>
+            <div>
               {/* X-Axis Labels */}
-              <Box display="flex" gap={0}>
+              <div className="flex gap-0">
                 {Array.from({ length: 24 }, (_, h) => (
-                  <Box key={h} w="24px" textAlign="center">
-                    <Text fontSize="xs" color="gray.500">{h}</Text>
-                  </Box>
+                  <div key={h} className="w-6 text-center">
+                    <span className="text-xs text-gray-500">{h}</span>
+                  </div>
                 ))}
-              </Box>
+              </div>
               {/* Cells */}
               {[0, 1, 2, 3, 4, 5, 6].map((dow) => (
-                <Box key={dow} display="flex" gap={0}>
+                <div key={dow} className="flex gap-0">
                   {Array.from({ length: 24 }, (_, hour) => {
                     const cell = heatmap.find((h: any) => h.wochentag === dow && h.stunde === hour)
                     const count = cell?.anzahl || 0
                     const intensity = count / maxAnzahl
                     return (
-                      <Box
+                      <div
                         key={hour}
-                        w="24px"
-                        h="24px"
-                        bg={count === 0 ? "gray.50" : `rgba(0, 52, 89, ${0.1 + intensity * 0.9})`}
-                        borderRadius="2px"
+                        className="w-6 h-6 rounded-sm m-[0.5px]"
+                        style={{
+                          backgroundColor: count === 0 ? "#F9FAFB" : `rgba(0, 52, 89, ${0.1 + intensity * 0.9})`,
+                        }}
                         title={`${WOCHENTAGE[dow]} ${hour}:00 — ${count} Tickets`}
-                        m="0.5px"
                       />
                     )
                   })}
-                </Box>
+                </div>
               ))}
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }

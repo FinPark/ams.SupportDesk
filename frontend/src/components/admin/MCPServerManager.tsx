@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from "react"
-import { Box, Button, Heading, HStack, Text, VStack, Input, Badge } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface MCPServer {
@@ -52,7 +51,6 @@ export default function MCPServerManager() {
 
   useEffect(() => { loadServers() }, [])
 
-  // Sortierung: aktive oben, inaktive unten, alphabetisch innerhalb
   const sortedServers = useMemo(() => {
     return [...servers].sort((a, b) => {
       if (a.is_active !== b.is_active) return a.is_active ? -1 : 1
@@ -95,23 +93,20 @@ export default function MCPServerManager() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("MCP-Server wirklich löschen?")) return
+    if (!confirm("MCP-Server wirklich loeschen?")) return
     try { await api.delete(`/admin/mcp-server/${id}`); await loadServers() } catch { /* ignore */ }
   }
 
   const handleToggleActive = async (s: MCPServer) => {
-    // Sofort visuell toggeln
     setServers((prev) => prev.map((srv) => srv.id === s.id ? { ...srv, is_active: !srv.is_active } : srv))
     try {
       await api.put(`/admin/mcp-server/${s.id}`, { is_active: !s.is_active })
-      // Nach 2 Sekunden neu laden (für Sortierung)
       setPendingSort(true)
       setTimeout(async () => {
         await loadServers()
         setPendingSort(false)
       }, 2000)
     } catch {
-      // Rollback
       setServers((prev) => prev.map((srv) => srv.id === s.id ? { ...srv, is_active: s.is_active } : srv))
     }
   }
@@ -122,120 +117,168 @@ export default function MCPServerManager() {
   }
 
   const renderForm = () => (
-    <Box bg="white" p={4} borderRadius="md" borderWidth={1} borderColor="blue.200" mb={4}>
-      <Heading size="sm" mb={3}>
+    <div className="bg-white p-4 rounded-md border border-blue-200 mb-4">
+      <h3 className="text-sm font-semibold mb-3">
         {editingId ? "MCP-Server bearbeiten" : "Neuen MCP-Server erstellen"}
-      </Heading>
-      <VStack gap={3} align="stretch">
-        <HStack gap={3}>
-          <Box flex={1}>
-            <Text fontSize="sm" fontWeight="medium" mb={1}>Name</Text>
-            <Input value={formName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormName(e.target.value)} placeholder="Servername" size="sm" bg="#EDF2F7" />
-          </Box>
-          <Box flex={1}>
-            <Text fontSize="sm" fontWeight="medium" mb={1}>Transport-Typ</Text>
-            <select value={formTransportType} onChange={(e) => setFormTransportType(e.target.value)}
-              style={{ width: "100%", padding: "6px 12px", border: "1px solid #E2E8F0", borderRadius: "6px", fontSize: "14px", backgroundColor: "#EDF2F7" }}>
-              {TRANSPORT_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+      </h3>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-1 block">Name</label>
+            <input
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="Servername"
+              className="w-full border rounded-md px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-1 block">Transport-Typ</label>
+            <select
+              value={formTransportType}
+              onChange={(e) => setFormTransportType(e.target.value)}
+              className="w-full border rounded-md px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              {TRANSPORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
-          </Box>
-        </HStack>
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={1}>Beschreibung</Text>
-          <Input value={formDescription} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormDescription(e.target.value)} placeholder="Beschreibung" size="sm" bg="#EDF2F7" />
-        </Box>
-        <HStack gap={3}>
-          <Box flex={1}>
-            <Text fontSize="sm" fontWeight="medium" mb={1}>URL</Text>
-            <Input value={formUrl} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormUrl(e.target.value)} placeholder="http://..." size="sm" bg="#EDF2F7" />
-          </Box>
-          <Box flex={1}>
-            <Text fontSize="sm" fontWeight="medium" mb={1}>Command</Text>
-            <Input value={formCommand} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormCommand(e.target.value)} placeholder="Startbefehl (optional)" size="sm" bg="#EDF2F7" />
-          </Box>
-        </HStack>
-        <HStack gap={4}>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
+          </div>
+        </div>
+        <div>
+          <label className="text-sm font-medium mb-1 block">Beschreibung</label>
+          <input
+            value={formDescription}
+            onChange={(e) => setFormDescription(e.target.value)}
+            placeholder="Beschreibung"
+            className="w-full border rounded-md px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          />
+        </div>
+        <div className="flex items-start gap-3">
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-1 block">URL</label>
+            <input
+              value={formUrl}
+              onChange={(e) => setFormUrl(e.target.value)}
+              placeholder="http://..."
+              className="w-full border rounded-md px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="text-sm font-medium mb-1 block">Command</label>
+            <input
+              value={formCommand}
+              onChange={(e) => setFormCommand(e.target.value)}
+              placeholder="Startbefehl (optional)"
+              className="w-full border rounded-md px-3 py-2 text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-1.5 text-sm">
             <input type="checkbox" checked={formIsActive} onChange={(e) => setFormIsActive(e.target.checked)} /> Aktiv
           </label>
-          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14 }}>
+          <label className="flex items-center gap-1.5 text-sm">
             <input type="checkbox" checked={formIsRag} onChange={(e) => setFormIsRag(e.target.checked)} /> RAG-Server
           </label>
-        </HStack>
-        <HStack gap={2}>
-          <Button size="sm" colorPalette="blue" onClick={handleSave} loading={saving} disabled={!formName.trim()}>
-            {editingId ? "Speichern" : "Erstellen"}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={cancelEdit}>Abbrechen</Button>
-        </HStack>
-      </VStack>
-    </Box>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+            onClick={handleSave}
+            disabled={saving || !formName.trim()}
+          >
+            {saving ? "..." : editingId ? "Speichern" : "Erstellen"}
+          </button>
+          <button className="px-4 py-2 rounded-md text-sm hover:bg-gray-50" onClick={cancelEdit}>
+            Abbrechen
+          </button>
+        </div>
+      </div>
+    </div>
   )
 
-  if (loading) return <Text color="gray.400">MCP-Server werden geladen...</Text>
+  if (loading) return <span className="text-gray-400">MCP-Server werden geladen...</span>
 
   return (
-    <Box maxW="900px" mx="auto">
-      <HStack justify="space-between" mb={4}>
-        <Heading size="md">MCP-Server</Heading>
-        <HStack gap={2}>
-          <Button size="sm" colorPalette="blue" variant="outline" onClick={handleSync} loading={syncing}>THoster Sync</Button>
-          <Button size="sm" colorPalette="blue" onClick={startCreate}>+ Neuer Server</Button>
-        </HStack>
-      </HStack>
+    <div className="max-w-[900px] mx-auto">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">MCP-Server</h2>
+        <div className="flex items-center gap-2">
+          <button
+            className="border border-primary text-primary px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/5 disabled:opacity-50"
+            onClick={handleSync}
+            disabled={syncing}
+          >
+            {syncing ? "..." : "THoster Sync"}
+          </button>
+          <button
+            className="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90"
+            onClick={startCreate}
+          >
+            + Neuer Server
+          </button>
+        </div>
+      </div>
 
       {showCreate && renderForm()}
 
       {servers.length === 0 ? (
-        <Box textAlign="center" py={8}>
-          <Text color="gray.400" mb={2}>Keine MCP-Server konfiguriert.</Text>
-          <Text fontSize="sm" color="gray.400">Erstelle einen neuen Server oder nutze den THoster Sync.</Text>
-        </Box>
+        <div className="text-center py-8">
+          <p className="text-gray-400 mb-2">Keine MCP-Server konfiguriert.</p>
+          <p className="text-sm text-gray-400">Erstelle einen neuen Server oder nutze den THoster Sync.</p>
+        </div>
       ) : (
-        <VStack gap={2} align="stretch">
+        <div className="flex flex-col gap-2">
           {sortedServers.map((s) => (
-            <Box key={s.id}>
+            <div key={s.id}>
               {editingId === s.id ? renderForm() : (
-                <Box
-                  bg="white" px={4} py={3} borderRadius="md"
-                  borderWidth={1} borderColor={s.is_active ? "green.200" : "gray.200"}
-                  borderLeftWidth={4} borderLeftColor={s.is_active ? "green.400" : "gray.300"}
-                  opacity={s.is_active ? 1 : 0.6}
-                  cursor="pointer"
-                  _hover={{ shadow: "sm", borderColor: "blue.200" }}
-                  transition="all 0.3s ease"
+                <div
+                  className={`bg-white px-4 py-3 rounded-md cursor-pointer transition-all duration-300 hover:shadow-sm hover:border-blue-200 ${
+                    s.is_active ? "opacity-100" : "opacity-60"
+                  }`}
+                  style={{
+                    border: `1px solid ${s.is_active ? "#bbf7d0" : "#e5e7eb"}`,
+                    borderLeftWidth: "4px",
+                    borderLeftColor: s.is_active ? "#4ade80" : "#d1d5db",
+                  }}
                   onClick={() => startEdit(s)}
                 >
-                  <HStack justify="space-between" align="center">
-                    <Box flex={1} minW={0}>
-                      <HStack gap={2} mb={1}>
-                        <Text fontWeight="bold" fontSize="sm">{s.name}</Text>
-                        <Badge colorPalette="blue" size="sm" variant="subtle">{s.transport_type}</Badge>
-                        {s.is_rag && <Badge colorPalette="purple" size="sm" variant="subtle">RAG</Badge>}
-                      </HStack>
-                      {s.description && <Text fontSize="xs" color="gray.500" lineClamp={1}>{s.description}</Text>}
-                    </Box>
-                    <HStack gap={2} flexShrink={0} onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        size="xs"
-                        variant={s.is_active ? "solid" : "outline"}
-                        colorPalette={s.is_active ? "green" : "gray"}
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-bold text-sm">{s.name}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
+                          {s.transport_type}
+                        </span>
+                        {s.is_rag && (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600">
+                            RAG
+                          </span>
+                        )}
+                      </div>
+                      {s.description && (
+                        <p className="text-xs text-gray-500 truncate">{s.description}</p>
+                      )}
+                    </div>
+                    <div
+                      className="flex items-center gap-2 shrink-0"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        className={`px-3 py-1 rounded-md text-xs font-medium min-w-[70px] ${
+                          s.is_active
+                            ? "bg-green-500 text-white hover:bg-green-600"
+                            : "border border-gray-300 text-gray-500 hover:bg-gray-50"
+                        }`}
                         onClick={() => handleToggleActive(s)}
-                        minW="70px"
                       >
                         {s.is_active ? "Aktiv" : "Inaktiv"}
-                      </Button>
-                      <Box
-                        as="button"
-                        p={1}
-                        borderRadius="md"
-                        color="gray.400"
-                        _hover={{ color: "red.500", bg: "red.50" }}
-                        transition="all 0.15s"
+                      </button>
+                      <button
+                        className="p-1 rounded-md text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150 flex items-center"
                         onClick={() => handleDelete(s.id)}
-                        title="Löschen"
-                        display="flex"
-                        alignItems="center"
+                        title="Loeschen"
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="3 6 5 6 21 6" />
@@ -243,15 +286,15 @@ export default function MCPServerManager() {
                           <line x1="10" y1="11" x2="10" y2="17" />
                           <line x1="14" y1="11" x2="14" y2="17" />
                         </svg>
-                      </Box>
-                    </HStack>
-                  </HStack>
-                </Box>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               )}
-            </Box>
+            </div>
           ))}
-        </VStack>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }

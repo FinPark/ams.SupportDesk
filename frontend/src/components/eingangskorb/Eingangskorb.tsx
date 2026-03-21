@@ -1,5 +1,4 @@
 import { useEffect, useCallback } from "react"
-import { Box, Heading, Text, VStack } from "@chakra-ui/react"
 import { useEingangskorb } from "@/hooks/useTickets"
 import { useWebSocket } from "@/hooks/useWebSocket"
 import EingangskorbItemCard from "./EingangskorbItem"
@@ -41,27 +40,27 @@ export default function Eingangskorb({ onTicketOpen }: Props) {
   }
 
   return (
-    <Box>
-      <Heading size="md" mb={4}>
+    <div>
+      <h3 className="text-lg font-bold mb-4">
         Eingangskorb
         {items.length > 0 && (
-          <Text as="span" ml={2} fontSize="sm" color="gray.400" fontWeight="normal">
+          <span className="ml-2 text-sm text-gray-400 font-normal">
             ({items.length})
-          </Text>
+          </span>
         )}
-      </Heading>
+      </h3>
 
       {loading && items.length === 0 && (
-        <Text color="gray.400">Laden...</Text>
+        <p className="text-gray-400">Laden...</p>
       )}
 
       {!loading && items.length === 0 && (
-        <Box textAlign="center" py={10}>
-          <Text color="gray.400">Keine neuen Anfragen</Text>
-        </Box>
+        <div className="text-center py-10">
+          <p className="text-gray-400">Keine neuen Anfragen</p>
+        </div>
       )}
 
-      <VStack gap={3} align="stretch">
+      <div className="flex flex-col gap-3">
         {items.map((item) => (
           <EingangskorbItemCard
             key={item.ticket_id}
@@ -69,7 +68,7 @@ export default function Eingangskorb({ onTicketOpen }: Props) {
             onUebernehmen={handleUebernehmen}
           />
         ))}
-      </VStack>
-    </Box>
+      </div>
+    </div>
   )
 }

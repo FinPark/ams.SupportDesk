@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { Box, Button, Heading, Input, Text, VStack } from "@chakra-ui/react"
 import api from "@/lib/api"
 
 interface Props {
@@ -36,50 +35,42 @@ export default function PortalLogin({ onIdentified }: Props) {
   }
 
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="gray.50"
-    >
-      <Box bg="white" p={8} borderRadius="xl" shadow="lg" w="full" maxW="400px">
-        <VStack gap={6}>
-          <Heading size="lg" color="blue.500">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-[400px]">
+        <div className="flex flex-col gap-6">
+          <h2 className="text-2xl font-bold text-primary">
             Support-Portal
-          </Heading>
-          <Text color="gray.500" textAlign="center">
+          </h2>
+          <p className="text-gray-500 text-center">
             Geben Sie Ihren Namen ein, um den Chat zu starten
-          </Text>
+          </p>
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
-            <VStack gap={4}>
-              <Input
+            <div className="flex flex-col gap-4">
+              <input
+                className="w-full border rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="Ihr Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                size="lg"
                 autoFocus
               />
-              <Input
+              <input
+                className="w-full border rounded-md px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary/20"
                 placeholder="Ticket-Nr. (optional)"
                 value={ticketNr}
                 onChange={(e) => setTicketNr(e.target.value)}
-                size="lg"
               />
-              {error && <Text color="red.500" fontSize="sm">{error}</Text>}
-              <Button
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+              <button
                 type="submit"
-                colorPalette="blue"
-                size="lg"
-                w="full"
-                loading={loading}
+                disabled={loading}
+                className="bg-primary text-white px-4 py-3 rounded-md text-base font-medium hover:bg-primary/90 disabled:opacity-50 w-full"
               >
-                Chat starten
-              </Button>
-            </VStack>
+                {loading ? "Laden..." : "Chat starten"}
+              </button>
+            </div>
           </form>
-        </VStack>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

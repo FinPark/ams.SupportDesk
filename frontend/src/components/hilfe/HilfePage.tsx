@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Box, Button, Heading, HStack, Text, VStack } from "@chakra-ui/react"
 import { useAuth } from "@/hooks/useAuth"
 import SupporterLogin from "@/components/shared/SupporterLogin"
 import MarkdownRenderer from "@/components/shared/MarkdownRenderer"
@@ -583,38 +582,29 @@ function IFrameSektion({
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <Box
-      borderWidth={1}
-      borderColor={borderColor}
-      borderRadius="lg"
-      overflow="hidden"
-      mb={4}
+    <div
+      className={`border rounded-lg overflow-hidden mb-4`}
+      style={{ borderColor }}
     >
       {/* Header */}
-      <Box
-        px={4}
-        py={3}
-        bg="blue.500"
-        cursor="pointer"
+      <div
+        className="px-4 py-3 bg-primary cursor-pointer flex items-center justify-between"
         onClick={() => setOpen((v) => !v)}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
       >
-        <HStack gap={2}>
-          <Text fontSize="lg">{icon}</Text>
-          <Text fontWeight="semibold" color="white">
+        <div className="flex items-center gap-2">
+          <span className="text-lg">{icon}</span>
+          <span className="font-semibold text-white">
             {titel}
-          </Text>
-        </HStack>
-        <Text color="white" fontSize="lg">
+          </span>
+        </div>
+        <span className="text-white text-lg">
           {open ? "▲" : "▼"}
-        </Text>
-      </Box>
+        </span>
+      </div>
 
       {/* Content */}
       {open && (
-        <Box p={2}>
+        <div className="p-2">
           <iframe
             src={url}
             style={{
@@ -627,9 +617,9 @@ function IFrameSektion({
             title={titel}
             allowTransparency={true}
           />
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 
@@ -649,48 +639,38 @@ function HilfeSektionComponent({
   onToggle,
 }: HilfeSektionComponentProps) {
   return (
-    <Box
-      borderWidth={1}
-      borderColor="gray.200"
-      borderRadius="lg"
-      overflow="hidden"
-      mb={3}
-    >
+    <div className="border border-gray-200 rounded-lg overflow-hidden mb-3">
       {/* Header */}
-      <Box
-        px={4}
-        py={3}
-        bg={isOpen ? "blue.500" : "white"}
-        cursor="pointer"
+      <div
+        className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors duration-150 ${
+          isOpen
+            ? "bg-primary hover:bg-primary/90"
+            : "bg-white hover:bg-gray-50"
+        }`}
         onClick={onToggle}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        _hover={{ bg: isOpen ? "blue.600" : "gray.50" }}
-        transition="background 0.15s"
       >
-        <HStack gap={3}>
-          <Text fontSize="xl">{sektion.icon}</Text>
-          <Text
-            fontWeight="semibold"
-            color={isOpen ? "white" : "gray.700"}
-            fontSize="md"
+        <div className="flex items-center gap-3">
+          <span className="text-xl">{sektion.icon}</span>
+          <span
+            className={`font-semibold text-base ${
+              isOpen ? "text-white" : "text-gray-700"
+            }`}
           >
             {sektion.titel}
-          </Text>
-        </HStack>
-        <Text color={isOpen ? "white" : "gray.400"} fontSize="lg">
+          </span>
+        </div>
+        <span className={`text-lg ${isOpen ? "text-white" : "text-gray-400"}`}>
           {isOpen ? "▲" : "▼"}
-        </Text>
-      </Box>
+        </span>
+      </div>
 
       {/* Content */}
       {isOpen && (
-        <Box px={5} py={4} bg="white">
+        <div className="px-5 py-4 bg-white">
           <MarkdownRenderer content={sektion.inhalt} />
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
 
@@ -732,14 +712,9 @@ function HilfePageContent() {
 
   if (loading) {
     return (
-      <Box
-        minH="100vh"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <Text color="gray.400">Laden...</Text>
-      </Box>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-400">Laden...</p>
+      </div>
     )
   }
 
@@ -748,91 +723,73 @@ function HilfePageContent() {
   }
 
   return (
-    <Box h="100vh" display="flex" flexDirection="column">
+    <div className="h-screen flex flex-col">
       {/* ------------------------------------------------------------------ */}
       {/* Header — identisch mit AdminPage / StatistikPage                   */}
       {/* ------------------------------------------------------------------ */}
-      <Box
-        bg="blue.500"
-        color="white"
-        px={4}
-        py={2}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        flexShrink={0}
-      >
-        <HStack gap={4}>
-          <Heading
-            size="md"
-            cursor="pointer"
+      <div className="bg-primary text-white px-4 py-2 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-4">
+          <h1
+            className="text-lg font-bold cursor-pointer"
             onClick={() => navigate("/")}
           >
             ams.SupportDesk
-          </Heading>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
+          </h1>
+          <button
+            className="text-white text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/")}
           >
             ← Tickets
-          </Button>
-          <Box w="1px" h="20px" bg="whiteAlpha.400" />
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <div className="w-px h-5 bg-white/40" />
+          <button
+            className="text-white/80 text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => window.open("/portal", "_blank")}
           >
             Kunden-Portal
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-white/80 text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/statistik")}
           >
             Statistik
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            color="white"
-            opacity={0.8}
+          </button>
+          <button
+            className="text-white/80 text-sm hover:bg-white/10 px-2 py-1 rounded"
             onClick={() => navigate("/admin")}
           >
             Admin
-          </Button>
-        </HStack>
-        <HStack gap={3}>
-          <Text fontSize="sm" color="whiteAlpha.800">
+          </button>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-white/80">
             Hilfe
-          </Text>
-          <Text fontSize="sm">{supporter.kuerzel}</Text>
-          <Button variant="ghost" size="sm" color="white" onClick={logout}>
+          </span>
+          <span className="text-sm">{supporter.kuerzel}</span>
+          <button
+            className="text-white text-sm hover:bg-white/10 px-2 py-1 rounded"
+            onClick={logout}
+          >
             Abmelden
-          </Button>
-        </HStack>
-      </Box>
+          </button>
+        </div>
+      </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Seiteninhalt                                                        */}
       {/* ------------------------------------------------------------------ */}
-      <Box flex={1} overflow="auto" bg="gray.50">
-        <Box maxW="1100px" mx="auto" px={6} py={6}>
+      <div className="flex-1 overflow-auto bg-gray-50">
+        <div className="max-w-[1100px] mx-auto px-6 py-6">
 
           {/* Seiten-Titel */}
-          <VStack align="start" mb={6} gap={1}>
-            <Heading size="xl" color="blue.500">
+          <div className="flex flex-col items-start mb-6 gap-1">
+            <h2 className="text-2xl font-bold text-primary">
               Hilfe & Dokumentation
-            </Heading>
-            <Text color="gray.500" fontSize="sm">
+            </h2>
+            <p className="text-gray-500 text-sm">
               Vollständige Anleitung für ams.SupportDesk — alle Funktionen erklärt
-            </Text>
-          </VStack>
+            </p>
+          </div>
 
           {/* ---------------------------------------------------------------- */}
           {/* IFrame-Sektionen: KI-Hilfe-Assistent & Support-Tickets          */}
@@ -842,7 +799,7 @@ function HilfePageContent() {
             icon="🤖"
             url={kiHilfeUrl}
             iframeHeight="600px"
-            borderColor="blue.200"
+            borderColor="#90CDF4"
             defaultOpen={false}
           />
 
@@ -851,41 +808,32 @@ function HilfePageContent() {
             icon="🎫"
             url={supportTicketsUrl}
             iframeHeight="800px"
-            borderColor="orange.300"
+            borderColor="#FBD38D"
             defaultOpen={false}
           />
 
           {/* ---------------------------------------------------------------- */}
           {/* Hilfe-Sektionen                                                  */}
           {/* ---------------------------------------------------------------- */}
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            mb={4}
-            mt={2}
-          >
-            <Heading size="md" color="gray.700">
+          <div className="flex items-center justify-between mb-4 mt-2">
+            <h3 className="text-lg font-bold text-gray-700">
               Dokumentation
-            </Heading>
-            <HStack gap={2}>
-              <Button
-                variant="ghost"
-                size="sm"
-                colorPalette="blue"
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                className="text-sm text-primary hover:bg-primary/10 px-2 py-1 rounded"
                 onClick={alleAufklappen}
               >
                 Alle aufklappen
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
+              </button>
+              <button
+                className="text-sm hover:bg-gray-100 px-2 py-1 rounded"
                 onClick={alleZuklappen}
               >
                 Alle zuklappen
-              </Button>
-            </HStack>
-          </Box>
+              </button>
+            </div>
+          </div>
 
           {HILFE_SEKTIONEN.map((sektion) => (
             <HilfeSektionComponent
@@ -897,20 +845,14 @@ function HilfePageContent() {
           ))}
 
           {/* Footer */}
-          <Box
-            mt={8}
-            pt={4}
-            borderTopWidth={1}
-            borderColor="gray.200"
-            textAlign="center"
-          >
-            <Text fontSize="xs" color="gray.400">
+          <div className="mt-8 pt-4 border-t border-gray-200 text-center">
+            <p className="text-xs text-gray-400">
               ams.SupportDesk Hilfe-Dokumentation — Stand: März 2026
-            </Text>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

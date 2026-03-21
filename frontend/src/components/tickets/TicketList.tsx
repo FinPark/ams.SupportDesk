@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
-import { Badge, Box, Button, HStack, Text, VStack } from "@chakra-ui/react"
 import { useTickets } from "@/hooks/useTickets"
-import { Supporter, Ticket } from "@/lib/types"
+import { Supporter } from "@/lib/types"
 
 interface Props {
   supporter: Supporter
@@ -12,12 +11,12 @@ interface Props {
 type Tab = "eingangskorb" | "meine" | "alle"
 
 const STATUS_COLORS: Record<string, string> = {
-  eingang: "yellow",
-  in_bearbeitung: "blue",
-  wartet: "orange",
-  geloest: "green",
-  bewertung: "purple",
-  geschlossen: "gray",
+  eingang: "bg-yellow-100 text-yellow-700",
+  in_bearbeitung: "bg-blue-100 text-blue-700",
+  wartet: "bg-orange-100 text-orange-700",
+  geloest: "bg-green-100 text-green-700",
+  bewertung: "bg-purple-100 text-purple-700",
+  geschlossen: "bg-gray-100 text-gray-700",
 }
 
 export default function TicketList({ supporter, onTicketSelect, selectedTicketId }: Props) {
@@ -32,86 +31,79 @@ export default function TicketList({ supporter, onTicketSelect, selectedTicketId
   }, [tab, supporter.id, loadTickets])
 
   return (
-    <Box h="100%" display="flex" flexDirection="column">
+    <div className="h-full flex flex-col">
       {/* Tabs */}
-      <HStack px={3} py={2} borderBottomWidth={1} borderColor="gray.200" gap={1}>
+      <div className="flex items-center px-3 py-2 border-b border-gray-200 gap-1">
         {(["meine", "eingangskorb", "alle"] as Tab[]).map((t) => (
-          <Button
+          <button
             key={t}
-            size="sm"
-            variant={tab === t ? "solid" : "ghost"}
-            colorPalette={tab === t ? "blue" : undefined}
+            className={`px-4 py-2 rounded-md text-sm font-medium ${
+              tab === t
+                ? "bg-primary text-white"
+                : "text-gray-600 hover:bg-gray-50"
+            }`}
             onClick={() => setTab(t)}
           >
             {t === "meine" ? "Meine" : t === "eingangskorb" ? "Eingang" : "Alle"}
-          </Button>
+          </button>
         ))}
-      </HStack>
+      </div>
 
       {/* Ticket-Liste */}
-      <Box flex={1} overflowY="auto">
+      <div className="flex-1 overflow-y-auto">
         {loading && tickets.length === 0 && (
-          <Text p={4} color="gray.400" fontSize="sm">Laden...</Text>
+          <p className="p-4 text-gray-400 text-sm">Laden...</p>
         )}
         {!loading && tickets.length === 0 && (
-          <Text p={4} color="gray.400" fontSize="sm" textAlign="center">
+          <p className="p-4 text-gray-400 text-sm text-center">
             Keine Tickets
-          </Text>
+          </p>
         )}
-        <VStack gap={0} align="stretch">
+        <div className="flex flex-col">
           {tickets.map((ticket) => (
-            <Box
+            <div
               key={ticket.id}
-              px={3}
-              py={3}
-              cursor="pointer"
-              bg={selectedTicketId === ticket.id ? "blue.50" : "transparent"}
-              borderBottomWidth={1}
-              borderColor="gray.100"
-              _hover={{ bg: "blue.50" }}
+              className={`px-3 py-3 cursor-pointer border-b border-gray-100 transition-colors duration-150 ${
+                selectedTicketId === ticket.id ? "bg-blue-50" : "hover:bg-blue-50"
+              }`}
               onClick={() => onTicketSelect(ticket.id)}
-              transition="background 0.15s"
             >
-              <HStack justify="space-between" mb={1}>
-                <Text
-                  fontSize="sm"
-                  fontWeight="medium"
-                  lineClamp={1}
-                  flex={1}
-                >
-                  <Text as="span" color="blue.500" fontWeight="bold">#{ticket.nummer}</Text>{" "}
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-medium line-clamp-1 flex-1">
+                  <span className="text-primary font-bold">#{ticket.nummer}</span>{" "}
                   {ticket.titel}
-                </Text>
-                <HStack gap={2} flexShrink={0}>
-                  <Badge
-                    size="sm"
-                    colorPalette={STATUS_COLORS[ticket.status]}
+                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                      STATUS_COLORS[ticket.status] || "bg-gray-100 text-gray-700"
+                    }`}
                   >
                     {ticket.status}
-                  </Badge>
-                  <Text fontSize="xs" color="blue.400">→</Text>
-                </HStack>
-              </HStack>
-              <HStack fontSize="xs" color="gray.400" gap={2}>
-                <Text>{ticket.kunde_name}</Text>
-                {ticket.supporter_kuerzel && <Text>· {ticket.supporter_kuerzel}</Text>}
-                <Text>
+                  </span>
+                  <span className="text-xs text-blue-400">→</span>
+                </div>
+              </div>
+              <div className="flex items-center text-xs text-gray-400 gap-2">
+                <span>{ticket.kunde_name}</span>
+                {ticket.supporter_kuerzel && <span>· {ticket.supporter_kuerzel}</span>}
+                <span>
                   · {new Date(ticket.updated_at).toLocaleDateString("de-DE")}
-                </Text>
-              </HStack>
+                </span>
+              </div>
               {ticket.tags.length > 0 && (
-                <HStack mt={1} gap={1} flexWrap="wrap">
+                <div className="flex items-center mt-1 gap-1 flex-wrap">
                   {ticket.tags.slice(0, 3).map((t) => (
-                    <Badge key={t.id} size="sm" variant="outline" colorPalette="blue">
+                    <span key={t.id} className="inline-flex items-center px-1.5 py-0.5 rounded border border-blue-200 text-xs text-blue-700">
                       #{t.tag}
-                    </Badge>
+                    </span>
                   ))}
-                </HStack>
+                </div>
               )}
-            </Box>
+            </div>
           ))}
-        </VStack>
-      </Box>
-    </Box>
+        </div>
+      </div>
+    </div>
   )
 }

@@ -242,16 +242,20 @@ Alle Konfiguration erfolgt ueber die `.env` Datei (Vorlage: `.env.example`):
 
 **Technologien:** FastMCP 2.x | httpx
 
-Der MCP-Server stellt 6 Tools fuer Claude Code und den Agent Hub bereit. Alle Aufrufe werden mit dem internen Service-Token (`X-Internal-Token` Header) gegen das Backend authentifiziert – ohne Cookie-Session.
+Der MCP-Server stellt 8 Tools fuer Claude Code und den Agent Hub bereit. Alle Aufrufe werden mit dem internen Service-Token (`X-Internal-Token` Header) gegen das Backend authentifiziert – ohne Cookie-Session.
 
-| Tool                    | Parameter             | Beschreibung                                                    |
-|-------------------------|-----------------------|-----------------------------------------------------------------|
-| `tickets_auflisten`     | `status`, `limit`     | Tickets auflisten; gibt Ticketnummern, Supporter-Kuerzel, Erstell- und Aktualisierungsdatum aus |
-| `ticket_details`        | `ticket_nummer: int`  | Details zu einem Ticket per Ticketnummer (z.B. `1001`)          |
-| `ticket_suchen`         | `query`, `limit`      | Volltext-Suche in Titel/Kundenname; gibt Ticketnummern aus      |
-| `eingangskorb_anzeigen` | –                     | Unbearbeitete Tickets im Eingangskorb mit Ticketnummer          |
-| `kunde_suchen`          | `query`               | Kunden nach Name oder Kundennummer suchen                       |
-| `tags_auflisten`        | `limit`               | Beliebteste Tags ueber alle Tickets auflisten                   |
+Der Server ist mit server-level `instructions` ausgestattet, die dem LLM erklaeren, wann welches Tool einzusetzen ist und welche Statusuebergaenge fuer Schreiboperationen gelten.
+
+| Tool                      | Parameter                            | Beschreibung                                                                          |
+|---------------------------|--------------------------------------|---------------------------------------------------------------------------------------|
+| `tickets_auflisten`       | `status`, `limit`                    | Tickets auflisten; gibt Ticketnummern, Supporter-Kuerzel, Erstell- und Aktualisierungsdatum aus |
+| `ticket_details`          | `ticket_nummer: int`                 | Details zu einem Ticket per Ticketnummer (z.B. `1001`)                                |
+| `ticket_suchen`           | `query`, `limit`                     | Suche in Titel/Kundenname (max. 200 Tickets); gibt Ticketnummern aus                  |
+| `ticket_status_aendern`   | `ticket_nummer: int`, `neuer_status` | Status eines Tickets aendern mit Elicitation-Bestaetigung durch den Nutzer            |
+| `ticket_uebernehmen`      | `ticket_nummer: int`                 | Ticket aus dem Eingangskorb uebernehmen mit Elicitation-Bestaetigung                  |
+| `eingangskorb_anzeigen`   | –                                    | Unbearbeitete Tickets im Eingangskorb mit Ticketnummer                                |
+| `kunde_suchen`            | `query`                              | Kunden nach Name oder Kundennummer suchen                                             |
+| `tags_auflisten`          | `limit`                              | Beliebteste Tags ueber alle Tickets auflisten                                         |
 
 **Endpunkt:** `http://ams-supportdesk.{SERVER_DOMAIN}/mcp` (Streamable HTTP)
 
@@ -418,7 +422,7 @@ ams.SupportDesk/
 └── mcp-server/
     ├── Dockerfile
     ├── pyproject.toml       # FastMCP 2.x + httpx
-    └── server.py            # 6 MCP-Tools
+    └── server.py            # 8 MCP-Tools inkl. Schreiboperationen mit Elicitation
 ```
 
 ---

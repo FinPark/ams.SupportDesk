@@ -1,8 +1,8 @@
 # ams.SupportDesk – Projektplan
 
 **Erstellt:** 14.03.2026
-**Stand:** 21.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen, Phase 4.2 Frontend-Migration Tailwind CSS v4 abgeschlossen
+**Stand:** 27.03.2026
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen, Phase 4.2 Frontend-Migration Tailwind CSS v4 abgeschlossen, Phase 4.3 MCP-Server Schreiboperationen & Server-Instructions abgeschlossen
 
 ---
 
@@ -27,6 +27,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 4.0: SDK-Integration (ams-llm + ams-thoster) | 15.03.2026 | Abgeschlossen |
 | Phase 4.1: Hilfe-Seite & Help-API | 18.03.2026 | Abgeschlossen |
 | Phase 4.2: Frontend-Migration Tailwind CSS v4 | 21.03.2026 | Abgeschlossen |
+| Phase 4.3: MCP-Server Schreiboperationen & Server-Instructions | 27.03.2026 | Abgeschlossen |
 
 ---
 
@@ -131,6 +132,18 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] Tool: `kunde_suchen`
 - [x] Tool: `tags_auflisten`
 - [x] Internes Service-Token (`X-Internal-Token`) fuer Auth ohne Cookie (Phase 3.1)
+
+---
+
+## Phase 4.3 – MCP-Server Schreiboperationen & Server-Instructions (27.03.2026)
+
+### MCP-Server Erweiterungen
+
+- [x] `FastMCP`-Konstruktor mit `instructions`: server-level Guidance fuer das LLM (welches Tool wann, Statusmaschine, Hinweise zu Schreiboperationen)
+- [x] `ticket_suchen`: Limit auf 200 Tickets gedeckelt (vorher unbegrenzt – schützt vor zu grossen Payloads)
+- [x] Neues Tool: `ticket_status_aendern` – Status eines Tickets aendern mit Elicitation-Bestaetigung (FastMCP `ctx.elicit()`, Pydantic `BaseModel`/`Field`)
+- [x] Neues Tool: `ticket_uebernehmen` – Ticket aus dem Eingangskorb uebernehmen und auf `in_bearbeitung` setzen mit Elicitation-Bestaetigung
+- [x] Imports: `Context`, `AcceptedElicitation`, `DeclinedElicitation` aus `fastmcp.server.context`; `BaseModel`, `Field` aus `pydantic`
 
 ---
 

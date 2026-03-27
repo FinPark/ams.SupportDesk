@@ -2,7 +2,7 @@
 
 **Erstellt:** 14.03.2026
 **Stand:** 27.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen, Phase 4.2 Frontend-Migration Tailwind CSS v4 abgeschlossen, Phase 4.3 MCP-Server Schreiboperationen & Server-Instructions abgeschlossen
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen, Phase 4.2 Frontend-Migration Tailwind CSS v4 abgeschlossen, Phase 4.3 MCP-Server Schreiboperationen & Server-Instructions abgeschlossen, Phase 4.4 MCP-Server tickets_auflisten Erweiterung & _find_ticket_by_nummer Mitigation abgeschlossen
 
 ---
 
@@ -28,6 +28,7 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 4.1: Hilfe-Seite & Help-API | 18.03.2026 | Abgeschlossen |
 | Phase 4.2: Frontend-Migration Tailwind CSS v4 | 21.03.2026 | Abgeschlossen |
 | Phase 4.3: MCP-Server Schreiboperationen & Server-Instructions | 27.03.2026 | Abgeschlossen |
+| Phase 4.4: MCP-Server tickets_auflisten Erweiterung & N+1-Mitigation | 27.03.2026 | Abgeschlossen |
 
 ---
 
@@ -144,6 +145,16 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 - [x] Neues Tool: `ticket_status_aendern` – Status eines Tickets aendern mit Elicitation-Bestaetigung (FastMCP `ctx.elicit()`, Pydantic `BaseModel`/`Field`)
 - [x] Neues Tool: `ticket_uebernehmen` – Ticket aus dem Eingangskorb uebernehmen und auf `in_bearbeitung` setzen mit Elicitation-Bestaetigung
 - [x] Imports: `Context`, `AcceptedElicitation`, `DeclinedElicitation` aus `fastmcp.server.context`; `BaseModel`, `Field` aus `pydantic`
+
+---
+
+## Phase 4.4 – MCP-Server tickets_auflisten Erweiterung & N+1-Mitigation (27.03.2026)
+
+### MCP-Server Verbesserungen
+
+- [x] `tickets_auflisten`: gibt jetzt zusaetzlich `prioritaet` und `ki_bewertung` aus – `ticket_details` ist dadurch fuer reine Uebersichtsabfragen seltener noetig
+- [x] Server-Instructions aktualisiert: `tickets_auflisten` beschreibt nun die vollstaendige Feldliste (Nummer, Titel, Status, Prioritaet, KI-Bewertung, Kunde, Supporter, Datum, Tags)
+- [x] `_find_ticket_by_nummer`: Limit von 200 auf 50 reduziert als Mitigation gegen ueberlange Payload-Ladestoesse; Kommentar dokumentiert den N+1-Effekt und empfiehlt Backend-Filter `?nummer=X` als saubere Loesung
 
 ---
 

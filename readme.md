@@ -248,7 +248,7 @@ Der Server ist mit server-level `instructions` ausgestattet, die dem LLM erklaer
 
 | Tool                      | Parameter                            | Beschreibung                                                                          |
 |---------------------------|--------------------------------------|---------------------------------------------------------------------------------------|
-| `tickets_auflisten`       | `status`, `limit`                    | Tickets auflisten; gibt Ticketnummern, Supporter-Kuerzel, Erstell- und Aktualisierungsdatum aus |
+| `tickets_auflisten`       | `status`, `limit`                    | Tickets auflisten; gibt Ticketnummern, Titel, Status, Prioritaet, KI-Bewertung, Kunde, Supporter, Datum und Tags aus – `ticket_details` ist dadurch seltener noetig |
 | `ticket_details`          | `ticket_nummer: int`                 | Details zu einem Ticket per Ticketnummer (z.B. `1001`)                                |
 | `ticket_suchen`           | `query`, `limit`                     | Suche in Titel/Kundenname (max. 200 Tickets); gibt Ticketnummern aus                  |
 | `ticket_status_aendern`   | `ticket_nummer: int`, `neuer_status` | Status eines Tickets aendern mit Elicitation-Bestaetigung durch den Nutzer            |

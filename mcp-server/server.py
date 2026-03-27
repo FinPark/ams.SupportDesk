@@ -14,8 +14,9 @@ mcp = FastMCP(
         "dabei, Tickets zu verwalten und Kunden zu unterstützen.\n\n"
         "**Wann welches Tool verwenden:**\n"
         "- `tickets_auflisten`: Übersicht aller Tickets – optional nach Status filtern "
-        "(eingang, in_bearbeitung, wartet, geloest, geschlossen). Starte immer hier, "
-        "wenn du einen Überblick brauchst.\n"
+        "(eingang, in_bearbeitung, wartet, geloest, geschlossen). Zeigt Nummer, Titel, "
+        "Status, Priorität, KI-Bewertung, Kunde, Supporter, Erstell-/Änderungsdatum "
+        "und Tags. Starte immer hier, wenn du einen Überblick brauchst.\n"
         "- `ticket_suchen`: Gezielt nach einem Ticket suchen (Titel oder Kundenname). "
         "Nutze dies, wenn der Nutzer nach einem bestimmten Thema oder Kunden fragt.\n"
         "- `ticket_details`: Volldetails zu einem einzelnen Ticket abrufen – übergib "
@@ -53,8 +54,14 @@ def _headers() -> dict:
 
 
 async def _find_ticket_by_nummer(client: httpx.AsyncClient, nummer: int) -> dict | None:
-    """Ticket anhand der Ticketnummer finden (lädt nur bis zu 200 Tickets)."""
-    r = await client.get(f"{API}/api/v1/tickets", params={"limit": 200})
+    """Ticket anhand der Ticketnummer finden.
+
+    Das Backend bietet keinen direkten Lookup per Nummer (weder ?nummer=X noch
+    /by-nummer/X). Als Mitigation wird limit=50 verwendet, damit nicht alle
+    Tickets geladen werden. Idealerweise wird im Backend ein Filter-Parameter
+    ?nummer=X ergänzt, um den N+1-Effekt vollständig zu vermeiden.
+    """
+    r = await client.get(f"{API}/api/v1/tickets", params={"limit": 50})
     if r.status_code != 200:
         return None
     for t in r.json():
@@ -65,7 +72,7 @@ async def _find_ticket_by_nummer(client: httpx.AsyncClient, nummer: int) -> dict
 
 @mcp.tool()
 async def tickets_auflisten(status: str = "", limit: int = 20) -> str:
-    """Liste alle Support-Tickets auf. Optional nach Status filtern (eingang, in_bearbeitung, wartet, geloest, geschlossen). Gibt Ticketnummern zurück, die für ticket_details verwendet werden können."""
+    """Liste alle Support-Tickets auf. Optional nach Status filtern (eingang, in_bearbeitung, wartet, geloest, geschlossen). Gibt Ticketnummern, Priorität und KI-Bewertung zurück, die für ticket_details verwendet werden können."""
     async with httpx.AsyncClient(timeout=10, headers=_headers()) as client:
         params = {"limit": limit}
         if status:
@@ -84,8 +91,11 @@ async def tickets_auflisten(status: str = "", limit: int = 20) -> str:
         created = t.get("created_at", "")[:19].replace("T", " ")
         updated = t.get("updated_at", "")[:19].replace("T", " ")
         supporter = t.get("supporter_kuerzel") or "–"
+        prioritaet = t.get("prioritaet", "normal")
+        ki = t.get("ki_bewertung")
+        ki_str = f" · KI: {ki:.1f}" if ki is not None else ""
         line = (
-            f"- **#{t['nummer']} {t['titel']}** ({t['status']})"
+            f"- **#{t['nummer']} {t['titel']}** ({t['status']}, {prioritaet}){ki_str}"
             f" · Kunde: {t.get('kunde_name', 'k.A.')}"
             f" · Supporter: {supporter}"
             f" · Erstellt: {created}"

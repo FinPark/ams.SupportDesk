@@ -1,8 +1,8 @@
 # ams.SupportDesk – Projektplan
 
 **Erstellt:** 14.03.2026
-**Stand:** 27.03.2026
-**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen, Phase 4.2 Frontend-Migration Tailwind CSS v4 abgeschlossen, Phase 4.3 MCP-Server Schreiboperationen & Server-Instructions abgeschlossen, Phase 4.4 MCP-Server tickets_auflisten Erweiterung & _find_ticket_by_nummer Mitigation abgeschlossen
+**Stand:** 2026-03-29
+**Phase:** Phase 1 abgeschlossen, Phase 1.1 Bugfixes & UI-Verbesserungen abgeschlossen, Phase 1.2 RAG-Collections Toggle abgeschlossen, Phase 2 KI-Integration abgeschlossen, Phase 3 Statistik & Analytics abgeschlossen, Phase 3.1 MCP-Server Auth-Fix & Tool-Verbesserungen abgeschlossen, Phase 3.2 RAG-Fixes & MCP-Datumserweiterung abgeschlossen, Phase 3.3 RAG-Query-Optimierung & Chat-UI-Verbesserungen abgeschlossen, Phase 4.0 SDK-Integration (ams-llm + ams-thoster) abgeschlossen, Phase 4.1 Hilfe-Seite & Help-API abgeschlossen, Phase 4.2 Frontend-Migration Tailwind CSS v4 abgeschlossen, Phase 4.3 MCP-Server Schreiboperationen & Server-Instructions abgeschlossen, Phase 4.4 MCP-Server tickets_auflisten Erweiterung & _find_ticket_by_nummer Mitigation abgeschlossen, Phase 4.5 ams-llm SDK is_default-Synchronisation abgeschlossen
 
 ---
 
@@ -29,6 +29,13 @@ ams.SupportDesk ist ein KI-gestuetztes Support-Tool, das Supporter, Kunden und K
 | Phase 4.2: Frontend-Migration Tailwind CSS v4 | 21.03.2026 | Abgeschlossen |
 | Phase 4.3: MCP-Server Schreiboperationen & Server-Instructions | 27.03.2026 | Abgeschlossen |
 | Phase 4.4: MCP-Server tickets_auflisten Erweiterung & N+1-Mitigation | 27.03.2026 | Abgeschlossen |
+| Phase 4.5: ams-llm SDK is_default-Synchronisation | 29.03.2026 | Abgeschlossen |
+
+---
+
+## Phase 4.5 – ams-llm SDK is_default-Synchronisation (Abgeschlossen)
+
+- [x] `backend/ams-llm-sdk/src/ams_llm/models.py`: `is_default: bool = False` zur `Connection`-Dataclass hinzugefuegt; `from_dict()` liest `data.get("is_default", False)` — SDK-Kopie synchronisiert mit ams.Connections SDK v36a
 
 ---
 

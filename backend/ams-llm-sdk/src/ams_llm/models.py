@@ -34,6 +34,7 @@ class Connection:
     endpoint_url: str
     model_name: str
     is_active: bool = True
+    is_default: bool = False
     security_level: str = "internal"
     context_window: int = 4096
     capabilities: Capabilities = field(default_factory=Capabilities)
@@ -51,6 +52,7 @@ class Connection:
             endpoint_url=data["endpoint_url"],
             model_name=data["model_name"],
             is_active=data.get("is_active", True),
+            is_default=data.get("is_default", False),
             security_level=data.get("security_level", "internal"),
             context_window=data.get("context_window", 4096),
             capabilities=Capabilities.from_dict(caps) if isinstance(caps, dict) else Capabilities(),
